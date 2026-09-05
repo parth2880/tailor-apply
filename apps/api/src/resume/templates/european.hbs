@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 16mm 16mm;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Calibri, Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.38;
+      color: #1f2937;
+      margin: 0;
+    }
+    header {
+      border-bottom: 2px solid #0f766e;
+      padding-bottom: 8pt;
+      margin-bottom: 10pt;
+    }
+    h1 {
+      font-size: 20pt;
+      font-weight: 700;
+      margin: 0 0 3pt 0;
+      letter-spacing: -0.02em;
+      color: #111827;
+    }
+    .headline {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #0f766e;
+      margin: 0 0 6pt 0;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2pt 12pt;
+      font-size: 9pt;
+      color: #374151;
+    }
+    .contact-grid span.label {
+      font-weight: 600;
+      color: #4b5563;
+    }
+    .section {
+      margin-top: 9pt;
+    }
+    .section h2 {
+      font-size: 9.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0f766e;
+      margin: 0 0 5pt 0;
+      padding-bottom: 2pt;
+      border-bottom: 1px solid #d1d5db;
+    }
+    .profile {
+      margin: 0;
+      text-align: justify;
+      color: #374151;
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      gap: 2pt 8pt;
+      font-size: 9.5pt;
+    }
+    .skills-grid .label {
+      font-weight: 600;
+      color: #4b5563;
+    }
+    .entry { margin-bottom: 7pt; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10pt;
+    }
+    .row .left {
+      font-weight: 700;
+      color: #111827;
+    }
+    .row .right {
+      font-weight: 600;
+      font-size: 9pt;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    .row.sub .left {
+      font-weight: 600;
+      font-style: normal;
+      color: #374151;
+    }
+    .row.sub .right {
+      font-weight: 500;
+      font-style: italic;
+    }
+    ul {
+      margin: 3pt 0 0 0;
+      padding-left: 14pt;
+    }
+    li {
+      margin: 0 0 2pt 0;
+      color: #374151;
+    }
+    .footer-block p {
+      margin: 0 0 3pt 0;
+      font-size: 9.5pt;
+    }
+    .footer-block strong {
+      color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{name}}</h1>
+    {{#if headline}}<p class="headline">{{headline}}</p>{{/if}}
+    <div class="contact-grid">
+      {{#each contactItems}}<div><span class="label">{{label}}:</span> {{value}}</div>{{/each}}
+    </div>
+  </header>
+
+  {{#if profile}}
+  <section class="section">
+    <h2>Profile</h2>
+    <p class="profile">{{profile}}</p>
+  </section>
+  {{/if}}
+
+  {{#if skill_groups}}
+  <section class="section">
+    <h2>Technical Skills</h2>
+    <div class="skills-grid">
+      {{#each skill_groups}}
+      <span class="label">{{label}}</span>
+      <span>{{items}}</span>
+      {{/each}}
+    </div>
+  </section>
+  {{else}}
+  {{#if skills}}
+  <section class="section">
+    <h2>Technical Skills</h2>
+    <p class="profile">{{skills}}</p>
+  </section>
+  {{/if}}
+  {{/if}}
+
+  <section class="section">
+    <h2>Professional Experience</h2>
+    {{#each experience}}
+    <div class="entry">
+      <div class="row">
+        <span class="left">{{company}}</span>
+        <span class="right">{{location}}</span>
+      </div>
+      <div class="row sub">
+        <span class="left">{{title}}</span>
+        <span class="right">{{dates}}</span>
+      </div>
+      {{#if bullets}}
+      <ul>
+        {{#each bullets}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+
+  {{#if projects}}
+  <section class="section">
+    <h2>Key Projects</h2>
+    {{#each projects}}
+    <div class="entry">
+      <div class="row">
+        <span class="left">{{name}}</span>
+        <span class="right">{{location}}</span>
+      </div>
+      {{#if title}}
+      <div class="row sub">
+        <span class="left">{{title}}</span>
+        <span class="right">{{dates}}</span>
+      </div>
+      {{/if}}
+      {{#if bullets}}
+      <ul>
+        {{#each bullets}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  <section class="section">
+    <h2>Education</h2>
+    {{#each education}}
+    <div class="entry">
+      <div class="row">
+        <span class="left">{{school}}</span>
+        <span class="right">{{location}}</span>
+      </div>
+      <div class="row sub">
+        <span class="left">{{degree}}</span>
+        <span class="right">{{dates}}</span>
+      </div>
+      {{#if details}}
+      <ul>
+        {{#each details}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+
+  {{#if languages}}
+  <section class="section footer-block">
+    <h2>Languages &amp; Interests</h2>
+    {{#if languages}}
+    <p><strong>Languages:</strong> {{languages}}</p>
+    {{/if}}
+    {{#if interests}}
+    <p><strong>Interests:</strong> {{interests}}</p>
+    {{/if}}
+  </section>
+  {{/if}}
+</body>
+</html>

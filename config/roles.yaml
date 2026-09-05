@@ -1,0 +1,85 @@
+titles:
+  - Frontend Developer
+  - UI/UX Developer
+  - Frontend Engineer
+  - UI Engineer
+  - React Developer
+  - Vue Developer
+
+skills:
+  - React
+  - Vue
+  - Next.js
+  - Nuxt
+  - Tailwind CSS
+  - CSS
+  - SCSS
+  - TypeScript
+  - JavaScript
+  - HTML
+  - UI/UX
+
+# Scoring / LLM context label
+location: "Europe"
+relocation_target: europe
+remote_ok: true
+
+# LinkedIn searches one location at a time — rotate through EU hubs each run
+locations:
+  - "European Union"
+  - "Germany"
+  - "Netherlands"
+  - "United Kingdom"
+  - "Ireland"
+  - "Portugal"
+  - "Spain"
+  - "France"
+  - "Poland"
+  - "Remote"
+
+# Boost / penalize during heuristic + LLM scoring
+location_prefer_keywords:
+  - europe
+  - european union
+  - emea
+  - eu
+  - germany
+  - berlin
+  - munich
+  - netherlands
+  - amsterdam
+  - rotterdam
+  - united kingdom
+  - uk
+  - london
+  - ireland
+  - dublin
+  - portugal
+  - lisbon
+  - spain
+  - barcelona
+  - madrid
+  - france
+  - paris
+  - poland
+  - warsaw
+  - visa sponsorship
+  - relocation
+  - relocate
+  - work permit
+
+location_avoid_keywords:
+  - us only
+  - united states only
+  - must be located in the us
+  - us citizenship
+  - clearance required
+  - india only
+  - must be in india
+  - no sponsorship
+  - without sponsorship
+
+# Fresh jobs: 72 = Past 3 days (EU listings are sparser than India)
+posted_within_hours: 72
+min_match_score: 55
+max_jobs_per_run: 40

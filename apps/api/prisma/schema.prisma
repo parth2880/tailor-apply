@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Matches the Python SQLite schema in src/job_automator/db/models.py
+model Job {
+  id                    Int     @id @default(autoincrement())
+  linkedinJobId         String  @unique @map("linkedin_job_id")
+  title                 String
+  company               String  @default("")
+  location              String  @default("")
+  url                   String
+  postedText            String  @default("") @map("posted_text")
+  description           String  @default("")
+  matchScore            Int?    @map("match_score")
+  matchRationale        String  @default("") @map("match_rationale")
+  status                String  @default("new")
+  isEasyApply           Int     @default(1) @map("is_easy_apply")
+  tailoredResumeMdPath  String? @map("tailored_resume_md_path")
+  tailoredResumePdfPath String? @map("tailored_resume_pdf_path")
+  coverLetterPath       String? @map("cover_letter_path")
+  applyError            String  @default("") @map("apply_error")
+  appliedAt             String? @map("applied_at")
+  createdAt             String  @default("") @map("created_at")
+  updatedAt             String  @default("") @map("updated_at")
+
+  @@index([status], map: "idx_jobs_status")
+  @@index([matchScore], map: "idx_jobs_score")
+  @@index([isEasyApply], map: "idx_jobs_easy_apply")
+  @@map("jobs")
+}

@@ -1,0 +1,108 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { fetchJob } from "@/lib/api";
+import { AppHeader } from "@/components/AppHeader";
+import { ApplyBadge, ScoreBadge, StatusBadge } from "@/components/badges";
+import { StatusButtons } from "@/components/StatusButtons";
+
+export default async function JobDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const jobId = Number(id);
+  if (!Number.isFinite(jobId)) notFound();
+  let job;
+  try {
+    job = await fetchJob(jobId);
+  } catch {
+    notFound();
+  }
+
+  return (
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-screen-2xl px-5 py-6 sm:px-8">
+        <p className="mb-5">
+          <Link className="text-sm font-medium text-ink-muted no-underline hover:text-brand" href="/">
+            ← Back to queue
+          </Link>
+        </p>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <article>
+            <header className="mb-6 rounded-3xl border border-line bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <ScoreBadge score={job.match_score} />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    <StatusBadge status={job.status} />
+                    <ApplyBadge easy={job.is_easy_apply} />
+                  </div>
+                  <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{job.title}</h1>
+                  <p className="mt-2 text-sm text-ink-muted">
+                    <span className="font-medium text-ink">{job.company}</span>
+                    <span className="mx-1.5">·</span>
+                    {job.location || "—"}
+                    <span className="mx-1.5">·</span>
+                    {job.posted_text || "recent"}
+                    {job.applied_at ? (
+                      <>
+                        <span className="mx-1.5">·</span>
+                        Applied {job.applied_at}
+                      </>
+                    ) : null}
+                  </p>
+                  {job.match_rationale ? (
+                    <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-relaxed text-ink/80">{job.match_rationale}</p>
+                  ) : null}
+                  {job.apply_error ? <p className="mt-3 text-sm text-ink-muted">Note: {job.apply_error}</p> : null}
+                </div>
+              </div>
+            </header>
+            {job.cover ? (
+              <section className="mb-5 rounded-3xl border border-line bg-white p-5 shadow-sm">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Cover letter</h2>
+                <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">{job.cover}</pre>
+              </section>
+            ) : null}
+            {job.resume_md ? (
+              <section className="mb-5 rounded-3xl border border-line bg-white p-5 shadow-sm">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Tailored resume</h2>
+                <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">{job.resume_md}</pre>
+              </section>
+            ) : null}
+            <section className="rounded-3xl border border-line bg-white p-5 shadow-sm">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Job description</h2>
+              <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">
+                {job.description || "No description stored yet."}
+              </pre>
+            </section>
+          </article>
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-3xl border border-line bg-white p-5 shadow-sm">
+              <p className="text-sm font-semibold">Next steps</p>
+              <p className="mt-1 text-xs text-ink-muted">Open LinkedIn to apply yourself. Mark the outcome here when you are done.</p>
+              <div className="mt-4 flex flex-col gap-2">
+                <a className="btn-primary no-underline" href={job.url} target="_blank" rel="noopener noreferrer">
+                  Open on LinkedIn
+                </a>
+                {job.tailored_resume_pdf_path ? (
+                  <a
+                    className="btn-secondary no-underline"
+                    href={`/api/jobs/${job.id}/resume.pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Preview resume PDF
+                  </a>
+                ) : null}
+                <StatusButtons jobId={job.id} />
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </>
+  );
+}

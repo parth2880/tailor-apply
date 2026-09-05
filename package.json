@@ -1,0 +1,16 @@
+{
+  "name": "job-automator",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter @job-automator/api --filter @job-automator/web run start:dev",
+    "api": "pnpm --filter @job-automator/api start:dev",
+    "web": "pnpm --filter @job-automator/web dev",
+    "linkedin-login": "pnpm --filter @job-automator/api linkedin-login",
+    "pipeline": "pnpm --filter @job-automator/api run:pipeline",
+    "process": "pnpm --filter @job-automator/api process",
+    "build": "pnpm --filter @job-automator/api build && pnpm --filter @job-automator/web build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

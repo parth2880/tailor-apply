@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    @page { size: Letter; margin: 0.55in; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Times New Roman", Times, Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.28;
+      color: #000;
+      margin: 0;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 10pt;
+    }
+    h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      margin: 0 0 4pt 0;
+    }
+    .contact {
+      font-size: 10.5pt;
+      margin: 0;
+    }
+    .section {
+      margin-top: 10pt;
+    }
+    .section h2 {
+      font-size: 11.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin: 0 0 6pt 0;
+      padding-bottom: 2pt;
+      border-bottom: 1px solid #000;
+    }
+    .entry { margin-bottom: 8pt; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12pt;
+    }
+    .left { font-weight: 700; }
+    .right { font-weight: 700; white-space: nowrap; }
+    .row.sub .left,
+    .row.sub .right {
+      font-weight: 400;
+      font-style: italic;
+    }
+    ul {
+      margin: 3pt 0 0 0;
+      padding-left: 16pt;
+    }
+    li { margin: 0 0 2pt 0; }
+    .skills p {
+      margin: 0 0 4pt 0;
+    }
+    .skills strong { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{name}}</h1>
+    {{#if headline}}<p class="contact">{{headline}}</p>{{/if}}
+    <p class="contact">{{contactLine}}</p>
+  </header>
+
+  <section class="section">
+    <h2>Education</h2>
+    {{#each education}}
+    <div class="entry">
+      <div class="row">
+        <span class="left">{{school}}</span>
+        <span class="right">{{location}}</span>
+      </div>
+      <div class="row sub">
+        <span class="left">{{degree}}</span>
+        <span class="right">{{dates}}</span>
+      </div>
+      {{#if details}}
+      <ul>
+        {{#each details}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+
+  <section class="section">
+    <h2>Work Experience</h2>
+    {{#each experience}}
+    <div class="entry">
+      <div class="row">
+        <span class="left">{{company}}</span>
+        <span class="right">{{location}}</span>
+      </div>
+      <div class="row sub">
+        <span class="left">{{title}}</span>
+        <span class="right">{{dates}}</span>
+      </div>
+      {{#if bullets}}
+      <ul>
+        {{#each bullets}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+
+  {{#if projects}}
+  <section class="section">
+    <h2>Projects</h2>
+    {{#each projects}}
+    <div class="entry">
+      <div class="row">
+        <span class="left">{{name}}</span>
+        <span class="right">{{location}}</span>
+      </div>
+      <div class="row sub">
+        <span class="left">{{title}}</span>
+        <span class="right">{{dates}}</span>
+      </div>
+      {{#if bullets}}
+      <ul>
+        {{#each bullets}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  <section class="section skills">
+    <h2>Skills &amp; Interests</h2>
+    <p><strong>Skills:</strong> {{skills}}</p>
+    {{#if interests}}
+    <p><strong>Interests:</strong> {{interests}}</p>
+    {{/if}}
+  </section>
+</body>
+</html>
