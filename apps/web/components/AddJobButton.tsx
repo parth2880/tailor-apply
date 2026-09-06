@@ -59,16 +59,16 @@ export function AddJobButton({ disabled }: Props) {
 
   return (
     <>
-      <button type="button" disabled={disabled || busy} onClick={() => setOpen(true)} className="btn-secondary">
+      <button type="button" disabled={disabled || busy} onClick={() => setOpen(true)} className="btn-secondary w-full sm:w-auto">
         Add job
       </button>
 
       {open ? (
         <Modal maxWidth="xl" onClose={() => !busy && setOpen(false)}>
-            <div className="max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-line bg-white p-6 shadow-2xl">
+            <div className="max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-line bg-white p-4 shadow-2xl sm:p-6">
               <div className="mb-5 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Add job manually</h2>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-semibold tracking-tight sm:text-xl">Add job manually</h2>
                   <p className="mt-1 text-sm text-ink-muted">
                     Paste a JD from LinkedIn or anywhere else. Optionally score and generate a tailored CV right away.
                   </p>
@@ -133,7 +133,7 @@ export function AddJobButton({ disabled }: Props) {
                 </div>
 
                 <div className="flex justify-end gap-2 border-t border-line pt-4">
-                  <button type="button" className="btn-secondary" disabled={busy} onClick={() => setOpen(false)}>
+                  <button type="button" className="btn-secondary w-full sm:w-auto" disabled={busy} onClick={() => setOpen(false)}>
                     Cancel
                   </button>
                   <button type="submit" className="btn-primary min-w-32" disabled={busy}>

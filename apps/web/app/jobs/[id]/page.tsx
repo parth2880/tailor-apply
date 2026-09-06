@@ -25,7 +25,7 @@ export default async function JobDetail({
   return (
     <>
       <AppHeader />
-      <main className="mx-auto max-w-screen-2xl px-5 py-6 sm:px-8">
+      <main className="mx-auto max-w-screen-2xl px-4 py-5 sm:px-8 sm:py-6">
         <p className="mb-5">
           <Link className="text-sm font-medium text-ink-muted no-underline hover:text-brand" href="/">
             ← Back to queue
@@ -33,7 +33,7 @@ export default async function JobDetail({
         </p>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <article>
-            <header className="mb-6 rounded-3xl border border-line bg-white p-6 shadow-sm">
+            <header className="mb-6 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                 <ScoreBadge score={job.match_score} />
                 <div className="min-w-0 flex-1">
@@ -61,18 +61,18 @@ export default async function JobDetail({
             </header>
             {job.score_breakdown ? <ScoreBreakdownCard breakdown={job.score_breakdown} /> : null}
             {job.cover ? (
-              <section className="mb-5 rounded-3xl border border-line bg-white p-5 shadow-sm">
+              <section className="mb-5 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Cover letter</h2>
                 <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">{job.cover}</pre>
               </section>
             ) : null}
             {job.resume_md ? (
-              <section className="mb-5 rounded-3xl border border-line bg-white p-5 shadow-sm">
+              <section className="mb-5 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Tailored resume</h2>
                 <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">{job.resume_md}</pre>
               </section>
             ) : null}
-            <section className="rounded-3xl border border-line bg-white p-5 shadow-sm">
+            <section className="rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Job description</h2>
               <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">
                 {job.description || "No description stored yet."}
@@ -80,7 +80,7 @@ export default async function JobDetail({
             </section>
           </article>
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-3xl border border-line bg-white p-5 shadow-sm">
+            <div className="rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
               <p className="text-sm font-semibold">Next steps</p>
               <p className="mt-1 text-xs text-ink-muted">Open LinkedIn to apply yourself. Mark the outcome here when you are done.</p>
               <div className="mt-4 flex flex-col gap-2">

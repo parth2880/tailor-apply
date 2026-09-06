@@ -5,7 +5,8 @@ import { ApplyBadge, scoreTone, StatusBadge } from "@/components/badges";
 import { JobFilters } from "@/components/JobFilters";
 import { JobRowActions } from "@/components/JobRowActions";
 import { RunControls } from "@/components/RunControls";
-import { ApiOfflineToast } from "@/components/ApiOfflineToast";
+import { ApiOfflineBanner, ApiOfflineToast } from "@/components/ApiOfflineToast";
+import { isApiUrlConfigured, isProbablyHosted } from "@/lib/server-api";
 
 type Search = Record<string, string | string[] | undefined>;
 
@@ -85,23 +86,31 @@ export default async function Home({
     }
   }
 
+  const apiUrlConfigured = isApiUrlConfigured();
+  const hosted = isProbablyHosted();
+
   return (
     <>
       <AppHeader actions={<RunControls />} />
-      <main className="mx-auto max-w-screen-2xl px-5 py-6 sm:px-8">
-        {!data ? <ApiOfflineToast /> : null}
+      <main className="mx-auto max-w-screen-2xl px-4 py-5 sm:px-8 sm:py-6">
+        {!data ? (
+          <>
+            <ApiOfflineToast apiUrlConfigured={apiUrlConfigured} hosted={hosted} />
+            <ApiOfflineBanner apiUrlConfigured={apiUrlConfigured} hosted={hosted} />
+          </>
+        ) : null}
 
         <JobFilters initial={filters} />
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <nav className="flex gap-1 overflow-x-auto rounded-2xl bg-white p-1 shadow-sm ring-1 ring-line">
+          <nav className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:rounded-2xl sm:bg-white sm:p-1 sm:shadow-sm sm:ring-1 sm:ring-line sm:pb-1">
             {tabs.map((tab) => {
               const active = tab.key ? status === tab.key : !status;
               return (
                 <Link
                   key={tab.key || "all"}
                   href={qs({ ...chipBase, status: tab.key })}
-                  className={`whitespace-nowrap rounded-xl px-3 py-2 text-sm no-underline transition ${active ? "bg-brand text-white shadow-sm" : "text-ink-muted hover:bg-slate-50 hover:text-ink"
+                  className={`shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm no-underline transition ${active ? "bg-brand text-white shadow-sm" : "bg-white text-ink-muted ring-1 ring-line sm:bg-transparent sm:ring-0 hover:bg-slate-50 hover:text-ink"
                     }`}
                 >
                   {tab.label}
@@ -123,7 +132,7 @@ export default async function Home({
         </div>
 
         {!jobs.length ? (
-          <div className="rounded-3xl border border-dashed border-line bg-white/70 px-6 py-16 text-center">
+          <div className="rounded-3xl border border-dashed border-line bg-white/70 px-5 py-14 text-center sm:px-6 sm:py-16">
             <p className="text-lg font-semibold">Nothing in this queue</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted">
               Clear filters, or use <strong>Find new jobs</strong> to search LinkedIn and fill this list.
@@ -131,7 +140,50 @@ export default async function Home({
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-3xl border border-line bg-white shadow-sm">
+            {/* Mobile card list */}
+            <ul className="grid gap-3 md:hidden">
+              {jobs.map((job) => (
+                <li key={job.id} className="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                  <div className="flex gap-3">
+                    <span
+                      className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-bold tabular-nums ${scoreTone(job.match_score)}`}
+                    >
+                      {job.match_score ?? "—"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1.5 flex flex-wrap gap-1.5">
+                        <StatusBadge status={job.status} />
+                        <ApplyBadge easy={job.is_easy_apply} />
+                      </div>
+                      <Link className="block text-base font-semibold leading-snug text-ink no-underline hover:text-brand" href={`/jobs/${job.id}`}>
+                        {job.title}
+                      </Link>
+                      <p className="mt-1 text-sm text-ink-muted">
+                        <span className="font-medium text-ink">{job.company || "—"}</span>
+                        <span className="mx-1">·</span>
+                        {job.location || "—"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-ink-muted">
+                        {job.posted_text || "recent"}
+                        <span className="mx-1">·</span>
+                        added {job.created_at?.slice(0, 10) || "—"}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm text-ink-muted">{job.match_rationale || "Not scored yet"}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 border-t border-line pt-3">
+                    <JobRowActions
+                      jobId={job.id}
+                      linkedinUrl={job.url}
+                      hasPdf={Boolean(job.tailored_resume_pdf_path)}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto rounded-3xl border border-line bg-white shadow-sm md:block">
               <table className="w-full min-w-[1100px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line bg-slate-50 text-left text-[0.72rem] font-semibold uppercase tracking-wide text-ink-muted">

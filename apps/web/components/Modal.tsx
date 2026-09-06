@@ -34,7 +34,7 @@ export function Modal({ children, onClose, maxWidth = "lg" }: Props) {
     <div className="fixed inset-0 z-100" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-slate-900/45 backdrop-blur-md" onClick={onClose} />
       <div
-        className={`relative mx-auto flex min-h-full items-center px-4 py-8 ${
+        className={`relative mx-auto flex min-h-full items-end px-3 py-4 sm:items-center sm:px-4 sm:py-8 ${
           maxWidth === "xl" ? "max-w-xl" : "max-w-lg"
         }`}
       >

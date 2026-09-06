@@ -62,10 +62,10 @@ export function JobFilters({ initial }: { initial: JobFilterValues }) {
   }
 
   return (
-    <section className="mb-5 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <label className="relative flex-1">
+    <section className="mb-5 rounded-3xl border border-line bg-white p-3 shadow-sm sm:p-5">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="grid gap-2 sm:flex sm:items-center">
+          <label className="relative w-full sm:min-w-0 sm:flex-1">
             <span className="sr-only">Search</span>
             <svg
               viewBox="0 0 24 24"
@@ -85,31 +85,33 @@ export function JobFilters({ initial }: { initial: JobFilterValues }) {
               placeholder="Search title, company, skills…"
             />
           </label>
-          <select
-            className="field w-auto flex-1"
-            value={values.sort}
-            aria-label="Sort by"
-            onChange={(e) => patch({ sort: e.target.value })}
-          >
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="score_desc">Highest score</option>
-            <option value="score_asc">Lowest score</option>
-            <option value="updated">Recently updated</option>
-          </select>
-          <select
-            className="field w-auto flex-1"
-            value={values.per_page}
-            aria-label="Per page"
-            onChange={(e) => patch({ per_page: e.target.value })}
-          >
-            {ALLOWED_PER_PAGE.map((n) => (
-              <option key={n} value={n}>
-                {n} / page
-              </option>
-            ))}
-          </select>
-          <Link className="btn-secondary no-underline" href="/">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto sm:shrink-0">
+            <select
+              className="field min-w-0"
+              value={values.sort}
+              aria-label="Sort by"
+              onChange={(e) => patch({ sort: e.target.value })}
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="score_desc">Highest score</option>
+              <option value="score_asc">Lowest score</option>
+              <option value="updated">Recently updated</option>
+            </select>
+            <select
+              className="field min-w-0"
+              value={values.per_page}
+              aria-label="Per page"
+              onChange={(e) => patch({ per_page: e.target.value })}
+            >
+              {ALLOWED_PER_PAGE.map((n) => (
+                <option key={n} value={n}>
+                  {n} / page
+                </option>
+              ))}
+            </select>
+          </div>
+          <Link className="btn-secondary w-full no-underline sm:w-auto" href="/">
             Reset
           </Link>
         </div>
