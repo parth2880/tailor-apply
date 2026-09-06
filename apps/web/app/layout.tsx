@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppToaster } from "@/components/AppToaster";
 import "./globals.css";
@@ -8,6 +8,12 @@ const inter = Inter({ subsets: ["latin"], display: "swap" });
 export const metadata: Metadata = {
   title: "Job Automator",
   description: "Find jobs · tailor resumes · you apply",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0f766e",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

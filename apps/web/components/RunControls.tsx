@@ -150,12 +150,17 @@ export function RunControls({ initialStatus }: Props) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
         <AddJobButton disabled={running} />
-        <button type="button" disabled={running} onClick={() => openModal("process")} className="btn-secondary">
+        <button type="button" disabled={running} onClick={() => openModal("process")} className="btn-secondary w-full sm:w-auto">
           Score & tailor
         </button>
-        <button type="button" disabled={running} onClick={() => openModal("search")} className="btn-primary min-w-36">
+        <button
+          type="button"
+          disabled={running}
+          onClick={() => openModal("search")}
+          className="btn-primary col-span-2 w-full sm:col-auto sm:min-w-36 sm:w-auto"
+        >
           {running ? (
             <>
               <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
@@ -169,7 +174,7 @@ export function RunControls({ initialStatus }: Props) {
 
       {banner && banner.status !== "idle" ? (
         <div
-          className={`fixed top-20 right-4 z-40 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border bg-white shadow-xl ${banner.status === "running"
+          className={`fixed top-[4.75rem] right-3 left-3 z-40 w-auto overflow-hidden rounded-2xl border bg-white shadow-xl sm:left-auto sm:right-4 sm:w-[min(24rem,calc(100vw-2rem))] ${banner.status === "running"
               ? "border-brand/30"
               : banner.status === "success"
                 ? "border-emerald-200"

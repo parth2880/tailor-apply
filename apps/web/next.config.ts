@@ -1,17 +1,10 @@
 import type { NextConfig } from "next";
 
-/** Nest API base URL used by Next rewrites (and SSR via API_URL). No trailing slash. */
-const apiUrl = (process.env.API_URL || "http://127.0.0.1:3001").replace(/\/$/, "");
-
-const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`,
-      },
-    ];
-  },
-};
+/**
+ * Browser /api calls are proxied at runtime by app/api/[...path]/route.ts
+ * so Vercel can use API_URL from runtime env (build-time rewrites cannot).
+ * SSR still calls Nest via API_URL in lib/api.ts / lib/server-api.ts.
+ */
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
