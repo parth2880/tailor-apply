@@ -174,6 +174,7 @@ export default async function Home({
                   <div className="mt-3 border-t border-line pt-3">
                     <JobRowActions
                       jobId={job.id}
+                      jobTitle={job.title}
                       linkedinUrl={job.url}
                       hasPdf={Boolean(job.tailored_resume_pdf_path)}
                     />
