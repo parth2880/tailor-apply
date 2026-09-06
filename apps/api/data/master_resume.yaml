@@ -1,0 +1,115 @@
+name: Parth Sharma
+headline: Frontend Engineer | React.js · Next.js · Vue.js · TypeScript
+profile: >-
+  Frontend/UI Engineer with 3.5 years of experience building modern, scalable, and
+  accessible web applications using React, Next.js, Vue.js, and TypeScript. Contributed
+  to the frontend rebuild of Toolstation, a Netherlands-based e-commerce platform,
+  helping drive up to a 35% improvement in application performance with Nuxt 3 and
+  Tailwind CSS. Currently leading UX and frontend delivery for live UK product platforms
+  at Tedekstra. Experienced in reusable, atomic-design component libraries and shipping
+  production interfaces for international clients. Based in India and open to relocating
+  across Europe.
+email: parthinteract@gmail.com
+phone: "+91 78768-00210"
+location: India | Open to Relocation across Europe
+linkedin: "https://www.linkedin.com/in/parthsharma2880/"
+github: "https://github.com/parth2880"
+portfolio: "https://parth-interact.vercel.app/"
+
+languages: "English (Professional Working Proficiency); Hindi (Native)"
+
+skill_groups:
+  - label: Frontend
+    items: React.js, Next.js, Vue.js, Nuxt.js, TypeScript, JavaScript (ES6+), HTML5, CSS3
+  - label: UI & Styling
+    items: Tailwind CSS, Bootstrap, Responsive Design, Component Libraries, Design Systems
+  - label: Engineering
+    items: State Management (Pinia), Performance Optimization, RBAC, Internationalisation (i18n)
+  - label: Backend & Tools
+    items: NestJS, Node.js, Express, MongoDB, MySQL, Builder.io, Flowbite, Git, Vite, Postman, Vercel
+
+education:
+  - school: Meri College of Engineering and Technology
+    location: India
+    degree: B.Tech in Computer Science & Engineering
+    dates: 2022 – 2026
+    details: []
+
+experience:
+  - company: Tedekstra
+    location: Remote
+    title: User Experience Lead
+    dates: 10/2025 – Present
+    bullets:
+      - Owned assigned frontend work across live UK product platforms, shipping features and production fixes rather than full rebuilds.
+      - Delivered EN/CY internationalisation, CMS-driven content, booking and authentication UI for Cycling4All (Next.js / React / TypeScript).
+      - Implemented and enhanced RBAC, HR dashboard/calendar, customer notes with @mentions, and project/package forms for Aqueous Digital’s internal CRM.
+      - Maintained and improved Access Support’s role-based DSA/NMH product across availability, DST handling, calendar/session flows and UAT/production delivery.
+
+  - company: WebReinvent Technologies Pvt. Ltd.
+    location: Delhi, India
+    title: Software Engineer
+    dates: 01/2024 – 10/2025
+    bullets:
+      - Delivered production frontend features in React.js and Vue.js for international clients.
+      - Contributed to the frontend rebuild of Toolstation, helping drive up to a 35% improvement in performance.
+      - Built and maintained reusable, atomic-design component libraries.
+      - Collaborated with cross-functional teams to ship responsive and pixel-perfect interfaces.
+
+  - company: WebReinvent Technologies Pvt. Ltd.
+    location: Delhi, India
+    title: Frontend Developer Trainee
+    dates: 07/2023 – 01/2024
+    bullets:
+      - Built responsive, user-friendly interfaces in React.js for client-facing websites.
+      - Identified and resolved production bugs and implemented new features.
+
+projects:
+  - name: Cycling4All — Live Cycling Platform
+    location: United Kingdom
+    title: Next.js · React · TypeScript · Tailwind CSS
+    dates: ""
+    bullets:
+      - Delivered frontend features and production fixes on a live Next.js/React application rather than rebuilding the platform from scratch.
+      - Implemented English/Welsh (EN/CY) internationalisation, CMS-driven content, booking and authentication UI.
+      - Integrated and supported Google Analytics and resolved production issues across footer, contact and user-facing flows.
+      - Owned assigned frontend work within a team, shipping features and fixes to the existing production application.
+
+  - name: Aqueous Digital — Internal CRM Platform
+    location: United Kingdom
+    title: Next.js · React · TypeScript · Tailwind CSS · NestJS · MongoDB
+    dates: ""
+    bullets:
+      - Delivered frontend features and production fixes for an internal CRM used by a UK marketing organisation.
+      - Implemented and enhanced RBAC, HR dashboard/calendar, customer notes with @mentions, project/package forms and navigation UI.
+      - Worked across the frontend layer of a Next.js/React/TypeScript product integrated with a NestJS and MongoDB backend.
+      - Shipped ongoing product improvements and bug fixes as part of continuous feature delivery.
+
+  - name: Access Support — DSA/NMH Product Platform
+    location: United Kingdom
+    title: React · Node.js · Express · MySQL
+    dates: ""
+    bullets:
+      - Maintained and enhanced a live role-based application, shipping production product improvements rather than performing a platform rebuild.
+      - Delivered fixes and UI improvements across staff availability, daylight-saving-time handling, calendar/session flows and admin/staff workflows.
+      - Supported UAT deployments and production delivery across role-restricted application flows.
+      - Worked as part of a team on frontend product development and issue resolution.
+
+  - name: Toolstation — E-Commerce Platform Rebuild
+    location: Netherlands
+    title: Nuxt.js 3, Vue.js, Tailwind CSS, Pinia, Builder.io, Flowbite
+    dates: 12/2023 – Present
+    bullets:
+      - Contributed to a live rebuild serving 600+ stores across Europe.
+      - Built a component library structured on atomic-design principles (atoms → molecules → organisms).
+      - Used Builder.io for CMS-driven content and Pinia for application state management.
+
+skills: >-
+  Frontend: React.js, Next.js, Vue.js, Nuxt.js, TypeScript, JavaScript (ES6+), HTML5, CSS3;
+  UI & Styling: Tailwind CSS, Bootstrap, Responsive Design, Component Libraries, Design Systems;
+  Engineering: State Management (Pinia), Performance Optimization, RBAC, Internationalisation (i18n);
+  Backend & Tools: NestJS, Node.js, Express, MongoDB, MySQL, Builder.io, Flowbite, Git, Vite, Postman, Vercel
+
+interests: >-
+  Open to frontend / UI roles across Europe (remote or on-site with relocation support);
+  component libraries and design systems; performance-focused product engineering

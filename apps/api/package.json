@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "nest build",
+    "build": "pnpm run sync-assets && nest build",
+    "sync-assets": "mkdir -p config data && cp -f ../../config/*.yaml config/ && cp -f ../../data/master_resume.yaml ../../data/master_resume.md data/",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",

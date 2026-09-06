@@ -3,12 +3,10 @@ import { NestFactory } from "@nestjs/core";
 import { config as loadDotenv } from "dotenv";
 import { join } from "path";
 import { AppModule } from "./app.module";
-import { PROJECT_ROOT, ensureDataDirs } from "./common/paths";
+import { PROJECT_ROOT, defaultDatabaseUrl, ensureDataDirs } from "./common/paths";
 
 loadDotenv({ path: join(PROJECT_ROOT, ".env") });
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = `file:${join(PROJECT_ROOT, "data", "app.db")}`;
-}
+process.env.DATABASE_URL = defaultDatabaseUrl();
 
 function corsOrigins(): string | string[] | boolean {
   const raw = process.env.CORS_ORIGIN || process.env.WEB_ORIGIN;

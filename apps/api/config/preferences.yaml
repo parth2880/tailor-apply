@@ -1,0 +1,40 @@
+# Search & pacing
+exclude_keywords:
+  - "unpaid"
+  - "internship"
+  - "intern "
+  - "volunteer"
+  - "us citizenship required"
+  - "must be located in the us"
+  - "us only"
+
+seniority_prefer:
+  - mid
+  - senior
+  - junior
+
+max_jobs_per_day: 40
+search_delay_seconds_min: 2.0
+search_delay_seconds_max: 5.0
+detail_delay_seconds_min: 1.5
+detail_delay_seconds_max: 4.0
+
+# Resume / cover letter
+generate_cover_letter: true
+master_resume_path: data/master_resume.yaml
+resume_template: european
+resume_page_format: A4
+
+# LinkedIn
+linkedin_base_url: "https://www.linkedin.com"
+browser_profile_dir: data/browser_profile
+headless: false
+
+# Search filters only (you apply yourself on LinkedIn)
+# f_AL=true → Easy Apply listings; f_WT=2 → Remote; f_TPR from roles.posted_within_hours
+search_easy_apply_filter: true
+discover_external_apply: true
+# false = include on-site/hybrid EU jobs (better for relocation); true = remote-only pass
+linkedin_remote_filter: false
+# When true, also run a second remote-only pass per location (remote_ok must be true)
+search_remote_pass: true
