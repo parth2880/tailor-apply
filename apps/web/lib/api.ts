@@ -1,6 +1,6 @@
 import { JobsResponse, Job, LlmCatalog, RunState } from "./types";
 
-/** Server-side calls hit Nest directly; browser calls use same-origin /api (Next rewrite). */
+/** Server-side calls hit Nest directly; browser calls use same-origin /api (runtime proxy). */
 function apiBase(): string {
   if (typeof window === "undefined") {
     return (process.env.API_URL || "http://127.0.0.1:3001").replace(/\/$/, "");

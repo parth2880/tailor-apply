@@ -43,18 +43,18 @@ Daily cron-friendly script: `scripts/daily_run.sh`.
 
 ## Deploying web + API separately
 
-The UI talks to Nest via `API_URL` (SSR) and Next rewrites of `/api/*`. If you only deploy the web app without pointing it at a reachable API, you get: *Could not reach the API…*
+Vercel (or similar) only runs the **Next.js web** app. The Nest API must be hosted elsewhere (Railway, Render, Fly, a VPS, etc.). If web cannot reach Nest you see *API offline* / *Could not reach the API…*.
 
 On the **API** service:
 
-- Start with `pnpm --filter @job-automator/api start:prod` (after `build`), or your platform’s Node start command on `apps/api`.
+- Start with `pnpm --filter @job-automator/api start:prod` (after `build`), or your platform’s Node start command for `apps/api`.
 - Set `DATABASE_URL`, LLM keys, and `CORS_ORIGIN=https://your-web-host` (comma-separated origins, or `*`).
 - Listen address defaults to `0.0.0.0`; port from `PORT` / `API_PORT` (default `3001`).
 
-On the **web** service:
+On the **web** service (e.g. Vercel):
 
-- Set **`API_URL=https://your-api-host`** (no trailing slash) at **build and runtime** so rewrites and server fetches hit Nest, not `127.0.0.1:3001`.
-- Rebuild/redeploy the web app after changing `API_URL`.
+- Set **`API_URL=https://your-api-host`** (no trailing slash) for **Production and Preview**, then **redeploy**.
+- Browser `/api/*` calls are proxied at **runtime** via `app/api/[...path]` (so `API_URL` does not need to be baked into Next rewrites at build time). SSR still reads `API_URL` on the server.
 
 Local monorepo `pnpm dev` still works without these vars.
 
