@@ -43,20 +43,32 @@ Daily cron-friendly script: `scripts/daily_run.sh`.
 
 ## Deploying web + API separately
 
-Vercel (or similar) only runs the **Next.js web** app. The Nest API must be hosted elsewhere (Railway, Render, Fly, a VPS, etc.). If web cannot reach Nest you see *API offline* / *Could not reach the API…*.
+### Web (Vercel) ✅
 
-On the **API** service:
+Deploy `apps/web` (or the monorepo with Root Directory `apps/web`).
 
-- Start with `pnpm --filter @job-automator/api start:prod` (after `build`), or your platform’s Node start command for `apps/api`.
-- Set `DATABASE_URL`, LLM keys, and `CORS_ORIGIN=https://your-web-host` (comma-separated origins, or `*`).
-- Listen address defaults to `0.0.0.0`; port from `PORT` / `API_PORT` (default `3001`).
+- Set **`API_URL=https://your-api-host`** (no trailing slash) for Production + Preview, then redeploy.
+- Browser `/api/*` is proxied at runtime; SSR also uses `API_URL`.
 
-On the **web** service (e.g. Vercel):
+### API — prefer Railway / Render / Fly / Docker ⚠️
 
-- Set **`API_URL=https://your-api-host`** (no trailing slash) for **Production and Preview**, then **redeploy**.
-- Browser `/api/*` calls are proxied at **runtime** via `app/api/[...path]` (so `API_URL` does not need to be baked into Next rewrites at build time). SSR still reads `API_URL` on the server.
+This Nest API uses **SQLite + Playwright**. That fits a **persistent Node host**, not Vercel’s read-only serverless filesystem.
 
-Local monorepo `pnpm dev` still works without these vars.
+**Recommended:** deploy with the included [`apps/api/Dockerfile`](apps/api/Dockerfile) on Railway/Render/Fly:
+
+- Start command / Docker image from that Dockerfile (or `pnpm --filter @job-automator/api start:prod` after build).
+- Env: `DATABASE_URL`, LLM keys, `CORS_ORIGIN=https://your-web.vercel.app`.
+- Bind `0.0.0.0`; port from `PORT` (default `3001`).
+
+**If the API is already on Vercel** (and you see `FUNCTION_INVOCATION_FAILED` / 500):
+
+1. Vercel project **Root Directory** = `apps/api`.
+2. Redeploy this branch (API now writes SQLite under `/tmp` and ships `config/` + resume inside the package).
+3. Set `CORS_ORIGIN` to your web URL.
+4. Open `https://your-api.vercel.app/health` — you should get `{ "ok": true }`.
+5. Know the limits: **/tmp DB is wiped on cold starts**; **LinkedIn browser search will not work** on Vercel. Use Railway (or similar) for the full pipeline.
+
+Local monorepo `pnpm dev` still works without deploy env vars.
 
 ## Free LLM options
 
