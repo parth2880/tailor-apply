@@ -31,7 +31,9 @@ function shouldExclude(title: string, company: string, prefs: PreferencesConfig)
   return prefs.exclude_keywords.some((kw) => hay.includes(kw.toLowerCase()));
 }
 
-function keywordQueries(roles: RolesConfig): string[] {
+function keywordQueries(roles: RolesConfig, options?: SearchOptions): string[] {
+  const custom = (options?.keywords || []).map((k) => k.trim()).filter(Boolean);
+  if (custom.length) return [...new Set(custom)];
   const queries = [...roles.titles];
   if (roles.skills?.length) {
     queries.push(roles.skills.slice(0, 6).join(" OR "));
@@ -317,7 +319,7 @@ export async function searchJobs(
   console.log(`\n=== Applying search filters ===\n${summarizeOptions(options)}\n${JSON.stringify(options)}\n`);
   persistOptions(options);
 
-  const queries = keywordQueries(roles);
+  const queries = keywordQueries(roles, options);
   const discovered: DiscoveredJob[] = [];
   const seenIds = new Set<string>();
   const daily = await jobs.countToday();

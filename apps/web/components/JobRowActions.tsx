@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { scoreJob, tailorJob } from "@/lib/api";
+import { tailoredResumeDownloadName } from "@/lib/resume-filename";
 
 const iconBtn =
   "relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-slate-50 text-ink shadow-sm transition hover:border-brand/40 hover:bg-brand-soft hover:text-brand disabled:cursor-not-allowed disabled:opacity-40";
@@ -57,11 +58,13 @@ function IconLink({
   label,
   href,
   external,
+  download,
   children,
 }: {
   label: string;
   href: string;
   external?: boolean;
+  download?: string;
   children: React.ReactNode;
 }) {
   const [show, setShow] = useState(false);
@@ -75,7 +78,15 @@ function IconLink({
   };
   if (external) {
     return (
-      <a href={href} aria-label={label} target="_blank" rel="noopener noreferrer" className={className} {...events}>
+      <a
+        href={href}
+        aria-label={label}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        download={download}
+        {...events}
+      >
         {tip}
         {children}
       </a>
@@ -91,10 +102,12 @@ function IconLink({
 
 export function JobRowActions({
   jobId,
+  jobTitle,
   linkedinUrl,
   hasPdf,
 }: {
   jobId: number;
+  jobTitle: string;
   linkedinUrl: string;
   hasPdf: boolean;
 }) {
@@ -141,7 +154,12 @@ export function JobRowActions({
         </svg>
       </IconLink>
       {hasPdf ? (
-        <IconLink label="Resume PDF" href={`/api/jobs/${jobId}/resume.pdf`} external>
+        <IconLink
+          label="Resume PDF"
+          href={`/api/jobs/${jobId}/resume.pdf`}
+          download={tailoredResumeDownloadName(jobTitle)}
+          external
+        >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 2h9l5 5v15H6z" />
             <path d="M15 2v5h5M8 13h8M8 17h5" />

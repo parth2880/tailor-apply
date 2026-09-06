@@ -16,7 +16,8 @@ import { createReadStream, existsSync, readFileSync } from "fs";
 import { JobsService } from "./jobs.service";
 import { toJobDto } from "./job.mapper";
 import { JOB_STATUSES, JobStatus, JobStatusValue } from "../common/job-status";
-import { scoreJob } from "../matching/scorer";
+import { explainScore, scoreJob, statusAfterScore } from "../matching/scorer";
+import { contentDisposition, tailoredResumeDownloadName } from "../resume/filename";
 import { tailorJob } from "../resume/tailor";
 import { LLMError } from "../llm/llm";
 
@@ -150,7 +151,7 @@ export class JobsController {
     const job = await this.jobs.get(id);
     if (!job) throw new NotFoundException("Job not found");
     const [score, rationale] = await scoreJob(job, undefined, true);
-    await this.jobs.updateScore(id, score, rationale, JobStatus.SCORED);
+    await this.jobs.updateScore(id, score, rationale, statusAfterScore(job));
     const updated = await this.jobs.get(id);
     return toJobDto(updated!);
   }
@@ -166,7 +167,10 @@ export class JobsController {
     }
     try {
       const tailored = await tailorJob(this.jobs, job);
-      return toJobDto(tailored);
+      const [score, rationale] = await scoreJob(tailored, undefined, true);
+      await this.jobs.updateScore(tailored.id, score, rationale, JobStatus.READY);
+      const updated = await this.jobs.get(tailored.id);
+      return toJobDto(updated!);
     } catch (exc) {
       const msg = exc instanceof LLMError || exc instanceof Error ? exc.message : String(exc);
       throw new HttpException(msg, HttpStatus.BAD_GATEWAY);
@@ -180,6 +184,7 @@ export class JobsController {
       throw new NotFoundException("PDF not found");
     }
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", contentDisposition(tailoredResumeDownloadName(job.title)));
     createReadStream(job.tailoredResumePdfPath).pipe(res);
   }
 
@@ -195,7 +200,7 @@ export class JobsController {
     if (job.tailoredResumeMdPath && existsSync(job.tailoredResumeMdPath)) {
       resume_md = readFileSync(job.tailoredResumeMdPath, "utf8");
     }
-    return { ...toJobDto(job), cover, resume_md };
+    return { ...toJobDto(job), cover, resume_md, score_breakdown: explainScore(job) };
   }
 
   @Post(":id/status/:status")

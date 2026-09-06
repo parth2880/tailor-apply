@@ -9,6 +9,7 @@ export type SearchOptions = {
   dry_run: boolean;
   llm_provider?: string | null;
   llm_model?: string | null;
+  keywords?: string[] | null;
 };
 
 function asBool(value: unknown, fallback: boolean): boolean {
@@ -34,6 +35,7 @@ export function defaultSearchOptions(
     dry_run: false,
     llm_provider: null,
     llm_model: null,
+    keywords: extra.keywords ?? null,
     ...extra,
   };
 }
@@ -54,6 +56,14 @@ export function parseSearchOptions(data?: Record<string, unknown> | null): Searc
   }
   let model = data.llm_model ? String(data.llm_model).trim() : null;
   if (!model) model = null;
+  const rawKeywords = Array.isArray(data.keywords) ? data.keywords : [];
+  const keywords = [
+    ...new Set(
+      rawKeywords
+        .map((k) => String(k || "").trim())
+        .filter((k) => k.length > 0 && k.length <= 80),
+    ),
+  ];
   return defaultSearchOptions({
     easy_apply: asBool(data.easy_apply, true),
     discover_external: asBool(data.discover_external, false),
@@ -65,6 +75,7 @@ export function parseSearchOptions(data?: Record<string, unknown> | null): Searc
     dry_run: asBool(data.dry_run, false),
     llm_provider: provider,
     llm_model: model,
+    keywords: keywords.length ? keywords : null,
   });
 }
 
@@ -81,5 +92,6 @@ export function summarizeOptions(options: SearchOptions): string {
   if (options.llm_provider) {
     bits.push(`llm=${options.llm_provider}/${options.llm_model || "default"}`);
   }
+  if (options.keywords?.length) bits.push(`${options.keywords.length} keyword(s)`);
   return bits.join(", ");
 }

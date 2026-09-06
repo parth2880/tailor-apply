@@ -108,3 +108,10 @@ export async function fetchLlmProviders(): Promise<LlmCatalog> {
   if (!res.ok) throw new Error("llm");
   return res.json();
 }
+
+export async function fetchSearchKeywords(): Promise<string[]> {
+  const res = await fetch("/api/search/keywords", { cache: "no-store" });
+  if (!res.ok) throw new Error("Could not load search keywords");
+  const data = (await res.json()) as { keywords?: string[] };
+  return Array.isArray(data.keywords) ? data.keywords.filter(Boolean) : [];
+}

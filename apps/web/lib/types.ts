@@ -20,6 +20,27 @@ export type Job = {
   updated_at: string;
   cover?: string;
   resume_md?: string;
+  score_breakdown?: ScoreBreakdown;
+};
+
+export type ScoreBreakdown = {
+  final_score: number | null;
+  heuristic_score: number;
+  llm_score: number | null;
+  blended: boolean;
+  weights: { llm: number; heuristic: number };
+  resume_source: "tailored" | "master" | "none";
+  resume_label: string;
+  title_hits: string[];
+  skill_hits: string[];
+  resume_overlap: string[];
+  remote_bonus: boolean;
+  location_delta: number;
+  location_note: string;
+  rationale: string;
+  steps: string[];
+  formula: { label: string; points: number; detail: string }[];
+  bands: { range: string; meaning: string }[];
 };
 
 export type JobsResponse = {

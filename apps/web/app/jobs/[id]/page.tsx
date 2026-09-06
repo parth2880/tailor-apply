@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchJob } from "@/lib/api";
+import { tailoredResumeDownloadName } from "@/lib/resume-filename";
 import { AppHeader } from "@/components/AppHeader";
 import { ApplyBadge, ScoreBadge, StatusBadge } from "@/components/badges";
+import { ScoreBreakdownCard } from "@/components/ScoreBreakdownCard";
 import { StatusButtons } from "@/components/StatusButtons";
 
 export default async function JobDetail({
@@ -53,13 +55,11 @@ export default async function JobDetail({
                       </>
                     ) : null}
                   </p>
-                  {job.match_rationale ? (
-                    <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-relaxed text-ink/80">{job.match_rationale}</p>
-                  ) : null}
                   {job.apply_error ? <p className="mt-3 text-sm text-ink-muted">Note: {job.apply_error}</p> : null}
                 </div>
               </div>
             </header>
+            {job.score_breakdown ? <ScoreBreakdownCard breakdown={job.score_breakdown} /> : null}
             {job.cover ? (
               <section className="mb-5 rounded-3xl border border-line bg-white p-5 shadow-sm">
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Cover letter</h2>
@@ -91,10 +91,11 @@ export default async function JobDetail({
                   <a
                     className="btn-secondary no-underline"
                     href={`/api/jobs/${job.id}/resume.pdf`}
+                    download={tailoredResumeDownloadName(job.title)}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Preview resume PDF
+                    Save resume PDF
                   </a>
                 ) : null}
                 <StatusButtons jobId={job.id} />

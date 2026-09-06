@@ -178,6 +178,7 @@ export default async function Home({
                       <td className="sticky right-0 z-10 border-l border-line bg-white px-3 py-3 shadow-[-10px_0_12px_-8px_rgba(15,23,42,0.12)] group-hover:bg-slate-50">
                         <JobRowActions
                           jobId={job.id}
+                          jobTitle={job.title}
                           linkedinUrl={job.url}
                           hasPdf={Boolean(job.tailored_resume_pdf_path)}
                         />

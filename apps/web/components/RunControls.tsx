@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { fetchLlmProviders, fetchRunStatus, startRun } from "@/lib/api";
+import { fetchLlmProviders, fetchRunStatus, fetchSearchKeywords, startRun } from "@/lib/api";
 import { LlmCatalog, RunState } from "@/lib/types";
 import { AddJobButton } from "./AddJobButton";
+import { KeywordTagInput } from "./KeywordTagInput";
 import { Modal } from "./Modal";
 
 type Props = { initialStatus?: string };
@@ -18,6 +19,7 @@ export function RunControls({ initialStatus }: Props) {
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
   const [logOpen, setLogOpen] = useState(true);
+  const [keywords, setKeywords] = useState<string[]>([]);
 
   useEffect(() => {
     if (initialStatus === "running") {
@@ -39,10 +41,20 @@ export function RunControls({ initialStatus }: Props) {
     }
   }
 
+  async function loadKeywords() {
+    try {
+      const next = await fetchSearchKeywords();
+      setKeywords(next);
+    } catch (exc) {
+      toast.error(exc instanceof Error ? exc.message : "Could not load search keywords");
+    }
+  }
+
   function openModal(mode: "search" | "process") {
     setModalMode(mode);
     setModalOpen(true);
     void loadCatalog();
+    if (mode === "search") void loadKeywords();
   }
 
   async function poll() {
@@ -71,6 +83,10 @@ export function RunControls({ initialStatus }: Props) {
     const form = e.currentTarget;
     const fd = new FormData(form);
     const skipSearch = modalMode === "process";
+    if (!skipSearch && !keywords.length) {
+      toast.error("Add at least one search keyword");
+      return;
+    }
     const filters = {
       posted_within_hours: Number(fd.get("posted_within_hours") || 24),
       sort_by: String(fd.get("sort_by") || "DD"),
@@ -82,6 +98,7 @@ export function RunControls({ initialStatus }: Props) {
       dry_run: false,
       llm_provider: provider || null,
       llm_model: model || null,
+      keywords: skipSearch ? null : keywords,
     };
     setBusy(true);
     setModalOpen(false);
@@ -234,6 +251,13 @@ export function RunControls({ initialStatus }: Props) {
             </div>
             <form className="flex flex-col gap-4" onSubmit={submit}>
               <div className={modalMode === "process" ? "hidden" : "grid gap-4"}>
+                <label className="grid gap-1.5 text-sm">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Search keywords</span>
+                  <KeywordTagInput value={keywords} onChange={setKeywords} />
+                  <span className="text-xs text-ink-muted">
+                    These titles are sent to LinkedIn. Press Enter or comma to add a tag.
+                  </span>
+                </label>
                 <label className="grid gap-1.5 text-sm">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Date posted</span>
                   <select name="posted_within_hours" defaultValue="24" className="field">

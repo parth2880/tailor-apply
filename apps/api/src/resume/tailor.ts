@@ -7,18 +7,9 @@ import { JobStatus } from "../common/job-status";
 import { MASTER_RESUME_YAML, OUTPUTS_DIR, PROJECT_ROOT, ensureDataDirs } from "../common/paths";
 import { JobsService } from "../jobs/jobs.service";
 import { LLMError, chatJson, chatText } from "../llm/llm";
+import { tailoredResumeStem } from "./filename";
 import { resumeToPdf } from "./pdf";
 import { ResumeData, normalizeResume, resumeToMarkdown } from "./schema";
-
-function slug(text: string): string {
-  const s = text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 60);
-  return s || "job";
-}
 
 export function loadMasterResumeData(): ResumeData {
   const prefs = getPreferences();
@@ -143,8 +134,7 @@ export async function tailorJob(
   const prefs = getPreferences();
   const masterData = master || loadMasterResumeData();
   const tailored = await tailorResumeData(masterData, job);
-  const stamp = new Date().toISOString().slice(0, 10);
-  const base = `${slug(job.company)}_${slug(job.title)}_${stamp}_${job.id}`;
+  const base = tailoredResumeStem(job);
   const mdPath = join(OUTPUTS_DIR, `${base}.md`);
   const jsonPath = join(OUTPUTS_DIR, `${base}.json`);
   const pdfPath = join(OUTPUTS_DIR, `${base}.pdf`);

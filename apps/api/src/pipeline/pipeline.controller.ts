@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpException, HttpStatus, Post } from "@nestjs/
 import { PipelineRunner } from "./runner";
 import { parseSearchOptions } from "./search-options";
 import { listLlmProviders } from "../llm/llm";
+import { getRolesConfig } from "../common/config";
 
 @Controller("api")
 export class PipelineController {
@@ -10,6 +11,12 @@ export class PipelineController {
   @Get("llm/providers")
   providers() {
     return listLlmProviders();
+  }
+
+  @Get("search/keywords")
+  keywords() {
+    const roles = getRolesConfig();
+    return { keywords: [...(roles.titles || [])] };
   }
 
   @Get("run/status")
