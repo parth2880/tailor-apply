@@ -4,6 +4,7 @@ import { getApiBaseUrl } from "@/lib/server-api";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+/** Headers that must not be forwarded request→upstream or upstream→client. */
 const HOP_BY_HOP = new Set([
   "connection",
   "keep-alive",
@@ -15,6 +16,10 @@ const HOP_BY_HOP = new Set([
   "upgrade",
   "host",
   "content-length",
+  // fetch() auto-decompresses; forwarding these causes ERR_CONTENT_DECODING_FAILED
+  // and empty bodies in the browser.
+  "content-encoding",
+  "accept-encoding",
 ]);
 
 async function proxy(req: NextRequest, path: string[]): Promise<NextResponse> {
@@ -27,6 +32,8 @@ async function proxy(req: NextRequest, path: string[]): Promise<NextResponse> {
     if (!HOP_BY_HOP.has(key.toLowerCase())) headers.set(key, value);
   });
   if (!headers.has("accept")) headers.set("accept", "application/json");
+  // Ask upstream for plain bytes; Node fetch would decompress anyway.
+  headers.set("accept-encoding", "identity");
 
   let body: ArrayBuffer | undefined;
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -58,7 +65,9 @@ async function proxy(req: NextRequest, path: string[]): Promise<NextResponse> {
     if (!HOP_BY_HOP.has(key.toLowerCase())) out.set(key, value);
   });
 
-  return new NextResponse(upstream.body, {
+  // Buffer the body so Vercel/Next never streams a half-consumed/compressed body.
+  const payload = await upstream.arrayBuffer();
+  return new NextResponse(payload, {
     status: upstream.status,
     statusText: upstream.statusText,
     headers: out,
