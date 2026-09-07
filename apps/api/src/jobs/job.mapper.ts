@@ -39,6 +39,7 @@ export type JobFilters = {
 export function buildWhere(filters: JobFilters): Prisma.JobWhereInput {
   const where: Prisma.JobWhereInput = {};
   if (filters.status) where.status = filters.status;
+  else where.status = { not: JobStatus.SKIPPED };
   if (filters.minScore != null || filters.maxScore != null) {
     where.matchScore = {};
     if (filters.minScore != null) where.matchScore.gte = filters.minScore;

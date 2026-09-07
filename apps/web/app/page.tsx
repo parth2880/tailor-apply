@@ -168,7 +168,9 @@ export default async function Home({
                         <span className="mx-1">·</span>
                         added {job.created_at?.slice(0, 10) || "—"}
                       </p>
-                      <p className="mt-2 line-clamp-2 text-sm text-ink-muted">{job.match_rationale || "Not scored yet"}</p>
+                      <p className="mt-2 line-clamp-2 text-sm text-ink-muted">
+                        {job.apply_error || job.match_rationale || "Not scored yet"}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-3 border-t border-line pt-3">
@@ -226,7 +228,9 @@ export default async function Home({
                         <StatusBadge status={job.status} />
                       </td>
                       <td className="max-w-[16rem] px-3 py-3">
-                        <span className="line-clamp-2 text-ink-muted">{job.match_rationale || "Not scored yet"}</span>
+                        <span className="line-clamp-2 text-ink-muted">
+                          {job.apply_error || job.match_rationale || "Not scored yet"}
+                        </span>
                       </td>
                       <td className="sticky right-0 z-10 border-l border-line bg-white px-3 py-3 shadow-[-10px_0_12px_-8px_rgba(15,23,42,0.12)] group-hover:bg-slate-50">
                         <JobRowActions

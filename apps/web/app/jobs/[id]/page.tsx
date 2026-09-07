@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchJob } from "@/lib/api";
-import { coverLetterDownloadName, psDownloadName } from "@/lib/resume-filename";
 import { AppHeader } from "@/components/AppHeader";
 import { ApplyBadge, ScoreBadge, StatusBadge } from "@/components/badges";
 import { JobMatchTabs } from "@/components/JobMatchTabs";
+import { JobRowActions } from "@/components/JobRowActions";
 import { StatusButtons } from "@/components/StatusButtons";
 
 export default async function JobDetail({
@@ -57,6 +57,16 @@ export default async function JobDetail({
                   </p>
                   {job.apply_error ? <p className="mt-3 text-sm text-ink-muted">Note: {job.apply_error}</p> : null}
                 </div>
+                <div className="shrink-0 sm:pt-1">
+                  <JobRowActions
+                    jobId={job.id}
+                    jobTitle={job.title}
+                    linkedinUrl={job.url}
+                    hasPdf={Boolean(job.tailored_resume_pdf_path)}
+                    variant="header"
+                    showDetails={false}
+                  />
+                </div>
               </div>
             </header>
             <JobMatchTabs job={job} />
@@ -75,26 +85,6 @@ export default async function JobDetail({
                 <a className="btn-primary no-underline" href={job.url} target="_blank" rel="noopener noreferrer">
                   Open on LinkedIn
                 </a>
-                {job.tailored_resume_pdf_path ? (
-                  <a
-                    className="btn-secondary no-underline"
-                    href={`/api/jobs/${job.id}/resume.pdf`}
-                    download={psDownloadName(job.title)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Save resume PDF
-                  </a>
-                ) : null}
-                {job.cover ? (
-                  <a
-                    className="btn-secondary no-underline"
-                    href={`/api/jobs/${job.id}/cover.pdf?download=1`}
-                    download={coverLetterDownloadName(job.title)}
-                  >
-                    Save cover letter PDF
-                  </a>
-                ) : null}
                 <StatusButtons jobId={job.id} />
               </div>
             </div>

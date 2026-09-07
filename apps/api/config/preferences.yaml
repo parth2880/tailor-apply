@@ -7,13 +7,19 @@ exclude_keywords:
   - "us citizenship required"
   - "must be located in the us"
   - "us only"
+  - "ai/ml"
+  - "machine learning"
+  - "data scientist"
+  - "data engineer"
+  - "devops"
+  - "security engineer"
 
 seniority_prefer:
   - mid
   - senior
   - junior
 
-max_jobs_per_day: 40
+max_jobs_per_day: 20
 search_delay_seconds_min: 2.0
 search_delay_seconds_max: 5.0
 detail_delay_seconds_min: 1.5

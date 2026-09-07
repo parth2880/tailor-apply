@@ -105,11 +105,15 @@ export function JobRowActions({
   jobTitle,
   linkedinUrl,
   hasPdf,
+  variant = "icons",
+  showDetails = true,
 }: {
   jobId: number;
   jobTitle: string;
   linkedinUrl: string;
   hasPdf: boolean;
+  variant?: "icons" | "stack" | "header";
+  showDetails?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"score" | "tailor" | null>(null);
@@ -132,6 +136,29 @@ export function JobRowActions({
     }
   }
 
+  if (variant === "stack" || variant === "header") {
+    return (
+      <div className={variant === "header" ? "flex flex-wrap items-center gap-2" : "flex flex-col gap-2"}>
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={busy !== null}
+          onClick={() => run("score")}
+        >
+          {busy === "score" ? "Scoring…" : "Score"}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={busy !== null}
+          onClick={() => run("tailor")}
+        >
+          {busy === "tailor" ? "Tailoring…" : "Tailor PDF"}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-nowrap items-center gap-1.5">
       <IconButton label="Score" busy={busy === "score"} disabled={busy !== null} onClick={() => run("score")}>
@@ -147,12 +174,14 @@ export function JobRowActions({
           <path d="M8 13h8M8 17h5" />
         </svg>
       </IconButton>
-      <IconLink label="Details" href={`/jobs/${jobId}`}>
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 11v6M12 8h.01" />
-        </svg>
-      </IconLink>
+      {showDetails ? (
+        <IconLink label="Details" href={`/jobs/${jobId}`}>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v6M12 8h.01" />
+          </svg>
+        </IconLink>
+      ) : null}
       {hasPdf ? (
         <IconLink
           label="Resume PDF"

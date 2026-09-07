@@ -246,7 +246,7 @@ export function RunControls({ initialStatus }: Props) {
                 <p className="mt-1 text-sm text-ink-muted">
                   {modalMode === "process"
                     ? "Fetch missing descriptions, score listings, and generate CV PDFs."
-                    : "Search LinkedIn with these filters, then score and tailor."}{" "}
+                    : "Search LinkedIn, then keep only titles that match your keywords (about 20 genuine roles per day). Off-target listings like AI Engineer are skipped."}{" "}
                   Free providers auto-switch if one hits a limit (never uses paid OpenAI).
                 </p>
               </div>
@@ -260,7 +260,7 @@ export function RunControls({ initialStatus }: Props) {
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Search keywords</span>
                   <KeywordTagInput value={keywords} onChange={setKeywords} />
                   <span className="text-xs text-ink-muted">
-                    These titles are sent to LinkedIn. Press Enter or comma to add a tag.
+                    Use the job titles you actually want (e.g. Frontend, React). LinkedIn still returns mixed results; we drop titles that are not a real match.
                   </span>
                 </label>
                 <label className="grid gap-1.5 text-sm">

@@ -81,5 +81,5 @@ location_avoid_keywords:
 
 # Fresh jobs: 72 = Past 3 days (EU listings are sparser than India)
 posted_within_hours: 72
-min_match_score: 55
-max_jobs_per_run: 40
+min_match_score: 60
+max_jobs_per_run: 20

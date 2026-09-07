@@ -14,16 +14,27 @@ const PROVIDER_DEFAULTS: Record<string, { base_url: string | null; model: string
   ollama: { base_url: "http://127.0.0.1:11434/v1", model: "llama3.2" },
   gemini: {
     base_url: "https://generativelanguage.googleapis.com/v1beta/openai/",
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
   },
 };
 
 const RETIRED_MODELS: Record<string, string> = {
   "llama-3.3-70b-versatile": "openai/gpt-oss-120b",
   "llama-3.1-8b-instant": "openai/gpt-oss-20b",
-  "gemini-2.0-flash": "gemini-2.5-flash",
-  "models/gemini-2.0-flash": "gemini-2.5-flash",
+  "gemini-2.0-flash": "gemini-3.6-flash",
+  "models/gemini-2.0-flash": "gemini-3.6-flash",
+  "gemini-2.5-flash": "gemini-3.6-flash",
+  "models/gemini-2.5-flash": "gemini-3.6-flash",
+  "gemini-2.5-flash-lite": "gemini-3.6-flash",
+  "gemini-3-flash-preview": "gemini-3.6-flash",
 };
+
+/** If a Gemini model ID 404s (retired / blocked for new AI Studio keys), try these next. */
+const GEMINI_MODEL_FALLBACKS = [
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.1-flash-lite",
+];
 
 /** Free providers only — never auto-failover onto paid OpenAI. */
 const FREE_PROVIDER_IDS = ["ollama", "groq", "gemini"] as const;
@@ -45,8 +56,8 @@ export const PROVIDER_CATALOG = [
   {
     id: "gemini",
     label: "Google Gemini",
-    models: ["gemini-2.5-flash", "gemini-3.6-flash", "gemini-2.0-flash"],
-    default_model: "gemini-2.5-flash",
+    models: ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite"],
+    default_model: "gemini-3.6-flash",
     cost: "Free tier",
     token_score: 70,
     token_note: "Free RPM/TPM; used automatically when Groq is limited.",
@@ -276,8 +287,10 @@ function wrapApiError(exc: unknown, provider = preferredProvider()): LLMError {
       `${provider} free-tier limit hit. Auto-failover will try another free provider (Groq / Gemini / Ollama).`,
     );
   }
-  if (msg.includes("404") && provider === "gemini" && msg.includes("2.0-flash")) {
-    return new LLMError("gemini-2.0-flash is retired. Pick gemini-2.5-flash in the portal.");
+  if (msg.includes("404") && provider === "gemini") {
+    return new LLMError(
+      "That Gemini model is unavailable (404). New AI Studio keys often cannot call gemini-2.5-flash — use gemini-3.6-flash.",
+    );
   }
   if (
     msg.includes("404") &&
@@ -355,6 +368,11 @@ async function withFreeFailover<T>(
   );
 }
 
+function isNotFoundError(exc: unknown): boolean {
+  const msg = String(exc);
+  return /\b404\b|not.?found|model_not_found/i.test(msg);
+}
+
 async function createChat(
   provider: string,
   params: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming,
@@ -362,15 +380,36 @@ async function createChat(
   const client = getClient(provider);
   const model = getModel(provider);
   const kwargs = { ...params, model };
-  try {
-    return await client.chat.completions.create(kwargs);
-  } catch (exc) {
-    if (/response_format|json_object/i.test(String(exc)) && kwargs.response_format) {
-      delete kwargs.response_format;
-      return client.chat.completions.create(kwargs);
+  const models =
+    provider === "gemini"
+      ? [...new Set([model, ...GEMINI_MODEL_FALLBACKS])]
+      : [model];
+
+  let lastError: unknown;
+  for (const candidate of models) {
+    const attempt = { ...kwargs, model: candidate };
+    try {
+      return await client.chat.completions.create(attempt);
+    } catch (exc) {
+      lastError = exc;
+      if (/response_format|json_object/i.test(String(exc)) && attempt.response_format) {
+        delete attempt.response_format;
+        try {
+          return await client.chat.completions.create(attempt);
+        } catch (retryExc) {
+          lastError = retryExc;
+        }
+      }
+      if (provider === "gemini" && isNotFoundError(exc) && candidate !== models[models.length - 1]) {
+        console.warn(`[llm] gemini model ${candidate} returned 404 — trying a current Flash model…`);
+        continue;
+      }
+      if (candidate === models[models.length - 1]) break;
+      if (provider === "gemini" && isNotFoundError(exc)) continue;
+      throw exc;
     }
-    throw exc;
   }
+  throw lastError;
 }
 
 export async function chatJson(

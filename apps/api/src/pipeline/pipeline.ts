@@ -6,9 +6,34 @@ import { searchJobs } from "../linkedin/search";
 import { withLinkedInSession } from "../linkedin/session";
 import { scorePendingJobs } from "../matching/scorer";
 import { tailorPendingJobs } from "../resume/tailor";
+import { skipReasonForCard, skipReasonForJd, targetPhrases } from "../matching/relevance";
 import { SearchOptions, defaultSearchOptions, summarizeOptions } from "./search-options";
 
 export type ProgressFn = (step: string, message: string) => void;
+
+async function dropOffTargetJobs(
+  jobs: JobsService,
+  roles: ReturnType<typeof getRolesConfig>,
+  options: SearchOptions,
+  titlesOnly: boolean,
+): Promise<number> {
+  const phrases = targetPhrases(roles, options);
+  let dropped = 0;
+  for (const status of [JobStatus.NEW, JobStatus.NOT_EASY_APPLY, JobStatus.SCORED, JobStatus.READY]) {
+    const pending = await jobs.list({ status }, "newest", 500, 0);
+    for (const job of pending) {
+      const reason = titlesOnly
+        ? skipReasonForCard(job.title, phrases)
+        : skipReasonForCard(job.title, phrases) ||
+          skipReasonForJd(job.title, job.description || "", phrases, roles.skills || []);
+      if (!reason) continue;
+      await jobs.markSkipped(job.id, reason);
+      dropped += 1;
+      console.log(`  Queue skip: ${job.title} @ ${job.company} — ${reason}`);
+    }
+  }
+  return dropped;
+}
 
 async function queueSummary(jobs: JobsService, threshold: number): Promise<void> {
   const nNew = await jobs.count({ status: JobStatus.NEW });
@@ -59,6 +84,12 @@ export async function runPipeline(
   }
 
   const prefs = getPreferences();
+  const titleDropped = await dropOffTargetJobs(jobs, roles, options, true);
+  if (titleDropped) {
+    console.log(`Removed ${titleDropped} off-target title(s) before fetching descriptions.`);
+    progress("enrich", `Removed ${titleDropped} off-target title(s)`);
+  }
+
   const needing = await jobs.listNeedingDescription(80);
   if (fetchDetails && needing.length) {
     console.log(`\n=== Step ${step}/${total}: Fetch missing job descriptions ===`);
@@ -73,6 +104,12 @@ export async function runPipeline(
     });
     console.log(`Filled ${filled} description(s).`);
     progress("enrich", `Filled ${filled} description(s)`);
+  }
+
+  const dropped = await dropOffTargetJobs(jobs, roles, options, false);
+  if (dropped) {
+    console.log(`Removed ${dropped} off-target job(s) from the queue.`);
+    progress("enrich", `Removed ${dropped} off-target job(s)`);
   }
 
   step += 1;

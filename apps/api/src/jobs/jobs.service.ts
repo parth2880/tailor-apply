@@ -149,6 +149,17 @@ export class JobsService {
     });
   }
 
+  markSkipped(id: number, reason: string) {
+    return this.prisma.job.update({
+      where: { id },
+      data: {
+        status: JobStatus.SKIPPED,
+        applyError: reason,
+        updatedAt: nowIso(),
+      },
+    });
+  }
+
   updateDescription(id: number, description: string) {
     return this.prisma.job.update({
       where: { id },
@@ -235,7 +246,9 @@ export class JobsService {
 
   countToday() {
     return this.prisma.$queryRaw<{ c: number }[]>`
-      SELECT COUNT(*) AS c FROM jobs WHERE date(created_at) = date('now')
+      SELECT COUNT(*) AS c FROM jobs
+      WHERE date(created_at) = date('now')
+        AND status != ${JobStatus.SKIPPED}
     `.then((rows) => Number(rows[0]?.c ?? 0));
   }
 }

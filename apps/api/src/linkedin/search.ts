@@ -4,6 +4,7 @@ import { PreferencesConfig, RolesConfig, getPreferences, getRolesConfig, searchL
 import { JobStatus } from "../common/job-status";
 import { DATA_DIR } from "../common/paths";
 import { JobsService } from "../jobs/jobs.service";
+import { skipReasonForCard, skipReasonForJd, targetPhrases, titleGate } from "../matching/relevance";
 import { SearchOptions, defaultSearchOptions, summarizeOptions } from "../pipeline/search-options";
 import { extractJobIdFromUrl, fetchJobDescription } from "./job-detail";
 import { LinkedInSession } from "./session";
@@ -34,11 +35,7 @@ function shouldExclude(title: string, company: string, prefs: PreferencesConfig)
 function keywordQueries(roles: RolesConfig, options?: SearchOptions): string[] {
   const custom = (options?.keywords || []).map((k) => k.trim()).filter(Boolean);
   if (custom.length) return [...new Set(custom)];
-  const queries = [...roles.titles];
-  if (roles.skills?.length) {
-    queries.push(roles.skills.slice(0, 6).join(" OR "));
-  }
-  return queries;
+  return [...new Set(roles.titles || [])];
 }
 
 function persistOptions(options: SearchOptions): void {
@@ -262,14 +259,26 @@ async function runQueryPass(args: {
     await sleep(800);
   }
   const cards = await parseJobCards(page, args.session.baseUrl, args.assumeEasyApply);
+  const phrases = targetPhrases(args.roles, args.options);
+  let skippedTitle = 0;
+  let skippedJd = 0;
   for (const card of cards) {
     if (args.discovered.length >= args.budget) break;
     if (args.seenIds.has(card.linkedin_job_id)) continue;
     if (shouldExclude(card.title, card.company, args.prefs)) continue;
+    const gate = titleGate(card.title, phrases);
+    const titleSkip = skipReasonForCard(card.title, phrases);
+    if (titleSkip) {
+      skippedTitle += 1;
+      console.log(`  Skip title: ${card.title} @ ${card.company} — ${titleSkip}`);
+      continue;
+    }
     if (args.externalOnly && card.is_easy_apply) continue;
     args.seenIds.add(card.linkedin_job_id);
-    args.discovered.push(card);
-    if (args.dryRun) continue;
+    if (args.dryRun) {
+      args.discovered.push(card);
+      continue;
+    }
     const job = await args.jobs.upsertDiscovered({
       linkedinJobId: card.linkedin_job_id,
       title: card.title,
@@ -280,11 +289,37 @@ async function runQueryPass(args: {
       isEasyApply: card.is_easy_apply,
       status: card.is_easy_apply ? JobStatus.NEW : JobStatus.NOT_EASY_APPLY,
     });
-    if (args.fetchDetails && !job.description) {
+    const needJd = args.fetchDetails || gate === "weak";
+    if (needJd && !(job.description && job.description.length > 40)) {
       await sleepRange(args.prefs.detail_delay_seconds_min, args.prefs.detail_delay_seconds_max);
       const desc = await fetchJobDescription(page, card.url);
       if (desc) await args.jobs.updateDescription(job.id, desc);
     }
+    const descNow = (await args.jobs.get(job.id))?.description || job.description || "";
+    if (descNow.length > 40) {
+      const jdSkip = skipReasonForJd(card.title, descNow, phrases, args.roles.skills || []);
+      if (jdSkip) {
+        skippedJd += 1;
+        if (job.status === JobStatus.NEW || job.status === JobStatus.NOT_EASY_APPLY) {
+          await args.jobs.markSkipped(job.id, jdSkip);
+        }
+        console.log(`  Skip JD: ${card.title} @ ${card.company} — ${jdSkip}`);
+        continue;
+      }
+    } else if (gate === "weak") {
+      skippedJd += 1;
+      if (job.status === JobStatus.NEW || job.status === JobStatus.NOT_EASY_APPLY) {
+        await args.jobs.markSkipped(job.id, "Generic title and no job description to confirm frontend fit");
+      }
+      console.log(`  Skip weak title without JD: ${card.title} @ ${card.company}`);
+      continue;
+    }
+    args.discovered.push(card);
+  }
+  if (skippedTitle || skippedJd) {
+    console.log(
+      `  Kept ${args.discovered.length} on-target so far; skipped ${skippedTitle} off-target title(s), ${skippedJd} off-target JD(s) this pass`,
+    );
   }
 }
 
@@ -324,10 +359,7 @@ export async function searchJobs(
   const seenIds = new Set<string>();
   const daily = await jobs.countToday();
   const remainingToday = Math.max(0, prefs.max_jobs_per_day - daily);
-  const budget = Math.min(
-    roles.max_jobs_per_run,
-    remainingToday || roles.max_jobs_per_run,
-  );
+  const budget = Math.min(roles.max_jobs_per_run, remainingToday);
   if (budget <= 0) {
     console.log("Daily job discovery budget reached; skipping search.");
     return [];
