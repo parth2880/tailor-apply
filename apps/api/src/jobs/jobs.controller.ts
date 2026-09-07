@@ -17,7 +17,9 @@ import { JobsService } from "./jobs.service";
 import { toJobDto } from "./job.mapper";
 import { JOB_STATUSES, JobStatus, JobStatusValue } from "../common/job-status";
 import { explainScore, scoreJob, statusAfterScore } from "../matching/scorer";
-import { contentDisposition, tailoredResumeDownloadName } from "../resume/filename";
+import { contentDisposition, psDownloadName } from "../resume/filename";
+import { getCoverLetterPdf } from "../resume/cover-pdf";
+import { getScoringResume } from "../resume/scoring-resume";
 import { tailorJob } from "../resume/tailor";
 import { LLMError } from "../llm/llm";
 
@@ -184,8 +186,54 @@ export class JobsController {
       throw new NotFoundException("PDF not found");
     }
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", contentDisposition(tailoredResumeDownloadName(job.title)));
+    res.setHeader("Content-Disposition", contentDisposition(psDownloadName(job.title)));
     createReadStream(job.tailoredResumePdfPath).pipe(res);
+  }
+
+  @Get(":id/scoring-resume.pdf")
+  async scoringResumePdf(
+    @Param("id", ParseIntPipe) id: number,
+    @Query("download") download: string | undefined,
+    @Res() res: Response,
+  ) {
+    const job = await this.jobs.get(id);
+    if (!job) throw new NotFoundException("Job not found");
+    try {
+      const resume = await getScoringResume(job);
+      if (!resume || !existsSync(resume.pdfPath)) {
+        throw new NotFoundException("No resume was used for scoring");
+      }
+      const asDownload = download === "1" || download === "true";
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", contentDisposition(resume.filename, asDownload ? "attachment" : "inline"));
+      createReadStream(resume.pdfPath).pipe(res);
+    } catch (exc) {
+      if (exc instanceof NotFoundException) throw exc;
+      const msg = exc instanceof Error ? exc.message : String(exc);
+      throw new HttpException(msg, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  @Get(":id/cover.pdf")
+  async coverPdf(
+    @Param("id", ParseIntPipe) id: number,
+    @Query("download") download: string | undefined,
+    @Res() res: Response,
+  ) {
+    const job = await this.jobs.get(id);
+    if (!job) throw new NotFoundException("Job not found");
+    try {
+      const cover = await getCoverLetterPdf(job);
+      if (!cover || !existsSync(cover.path)) throw new NotFoundException("Cover letter not found");
+      const asDownload = download === "1" || download === "true";
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", contentDisposition(cover.filename, asDownload ? "attachment" : "inline"));
+      createReadStream(cover.path).pipe(res);
+    } catch (exc) {
+      if (exc instanceof NotFoundException) throw exc;
+      const msg = exc instanceof Error ? exc.message : String(exc);
+      throw new HttpException(msg, HttpStatus.BAD_GATEWAY);
+    }
   }
 
   @Get(":id")

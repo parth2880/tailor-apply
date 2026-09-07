@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { scoreJob, tailorJob } from "@/lib/api";
-import { tailoredResumeDownloadName } from "@/lib/resume-filename";
+import { psDownloadName } from "@/lib/resume-filename";
 
 const iconBtn =
   "relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-slate-50 text-ink shadow-sm transition hover:border-brand/40 hover:bg-brand-soft hover:text-brand disabled:cursor-not-allowed disabled:opacity-40";
@@ -157,7 +157,7 @@ export function JobRowActions({
         <IconLink
           label="Resume PDF"
           href={`/api/jobs/${jobId}/resume.pdf`}
-          download={tailoredResumeDownloadName(jobTitle)}
+          download={psDownloadName(jobTitle)}
           external
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">

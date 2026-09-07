@@ -23,13 +23,13 @@ function TagList({ items, empty }: { items: string[]; empty: string }) {
   );
 }
 
-export function ScoreBreakdownCard({ breakdown }: { breakdown: ScoreBreakdown }) {
+export function ScoreBreakdownContent({ breakdown }: { breakdown: ScoreBreakdown }) {
   const llmPct = Math.round(breakdown.weights.llm * 100);
   const heurPct = Math.round(breakdown.weights.heuristic * 100);
   const scored = breakdown.final_score != null;
 
   return (
-    <section className="mb-5 rounded-3xl border border-line bg-white p-5 shadow-sm sm:p-6">
+    <div>
       <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-ink-muted">
         How this score was calculated
       </h2>
@@ -65,7 +65,7 @@ export function ScoreBreakdownCard({ breakdown }: { breakdown: ScoreBreakdown })
       </div>
 
       <div className="mb-5 rounded-2xl border border-line/80 bg-cream-100/60 px-4 py-3">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Resume used</p>
+        <p className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Scored against</p>
         <p className="mt-1 text-sm font-medium text-ink">{breakdown.resume_label}</p>
       </div>
 
@@ -124,6 +124,6 @@ export function ScoreBreakdownCard({ breakdown }: { breakdown: ScoreBreakdown })
           ))}
         </ul>
       </div>
-    </section>
+    </div>
   );
 }

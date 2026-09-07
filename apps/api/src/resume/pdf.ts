@@ -1,13 +1,17 @@
-import { readFileSync, mkdirSync } from "fs";
+import { existsSync, readFileSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
 import Handlebars from "handlebars";
 import { chromium } from "playwright";
 import { contactItems, contactLine, ResumeData } from "./schema";
 
 const TEMPLATES_DIR = join(__dirname, "templates");
+const SRC_TEMPLATES_DIR = join(__dirname, "..", "..", "src", "resume", "templates");
 
 function compile(name: string) {
-  const src = readFileSync(join(TEMPLATES_DIR, name), "utf8");
+  const fromDist = join(TEMPLATES_DIR, name);
+  const fromSrc = join(SRC_TEMPLATES_DIR, name);
+  const path = existsSync(fromDist) ? fromDist : fromSrc;
+  const src = readFileSync(path, "utf8");
   return Handlebars.compile(src);
 }
 
@@ -57,4 +61,43 @@ export async function resumeToPdf(
     | "A4"
     | "Letter";
   return htmlToPdf(resumeToHtml(resume, template), outputPath, fmt);
+}
+
+function coverParagraphs(body: string): string[] {
+  return body
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+export function coverLetterToHtml(input: {
+  name: string;
+  headline?: string;
+  jobTitle: string;
+  company?: string;
+  body: string;
+}): string {
+  const tpl = compile("cover.hbs");
+  return tpl({
+    name: input.name,
+    headline: input.headline || "",
+    jobTitle: input.jobTitle,
+    company: input.company || "",
+    date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
+    paragraphs: coverParagraphs(input.body),
+  });
+}
+
+export async function coverLetterToPdf(
+  input: {
+    name: string;
+    headline?: string;
+    jobTitle: string;
+    company?: string;
+    body: string;
+  },
+  outputPath: string,
+  pageFormat: "A4" | "Letter" = "A4",
+): Promise<string> {
+  return htmlToPdf(coverLetterToHtml(input), outputPath, pageFormat);
 }

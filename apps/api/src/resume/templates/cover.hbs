@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>{{name}} - Cover letter</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 16mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Calibri, Helvetica, Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    header {
+      border-bottom: 2px solid #0f766e;
+      padding-bottom: 8pt;
+      margin-bottom: 14pt;
+    }
+
+    h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      margin: 0 0 3pt 0;
+      letter-spacing: -0.02em;
+      color: #111827;
+    }
+
+    .headline {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #0f766e;
+      margin: 0 0 6pt 0;
+    }
+
+    .meta {
+      font-size: 9.5pt;
+      color: #4b5563;
+    }
+
+    .meta strong {
+      color: #111827;
+    }
+
+    .date {
+      margin: 0 0 14pt 0;
+      color: #4b5563;
+      font-size: 10pt;
+    }
+
+    p {
+      margin: 0 0 9pt 0;
+      text-align: justify;
+      color: #374151;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>{{name}}</h1>
+    {{#if headline}}<p class="headline">{{headline}}</p>{{/if}}
+    <p class="meta">Cover letter · <strong>{{jobTitle}}</strong>{{#if company}} at {{company}}{{/if}}</p>
+  </header>
+  {{#if date}}<p class="date">{{date}}</p>{{/if}}
+  {{#each paragraphs}}
+  <p>{{this}}</p>
+  {{/each}}
+</body>
+
+</html>

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchJob } from "@/lib/api";
-import { tailoredResumeDownloadName } from "@/lib/resume-filename";
+import { coverLetterDownloadName, psDownloadName } from "@/lib/resume-filename";
 import { AppHeader } from "@/components/AppHeader";
 import { ApplyBadge, ScoreBadge, StatusBadge } from "@/components/badges";
-import { ScoreBreakdownCard } from "@/components/ScoreBreakdownCard";
+import { JobMatchTabs } from "@/components/JobMatchTabs";
 import { StatusButtons } from "@/components/StatusButtons";
 
 export default async function JobDetail({
@@ -59,19 +59,7 @@ export default async function JobDetail({
                 </div>
               </div>
             </header>
-            {job.score_breakdown ? <ScoreBreakdownCard breakdown={job.score_breakdown} /> : null}
-            {job.cover ? (
-              <section className="mb-5 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Cover letter</h2>
-                <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">{job.cover}</pre>
-              </section>
-            ) : null}
-            {job.resume_md ? (
-              <section className="mb-5 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Tailored resume</h2>
-                <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">{job.resume_md}</pre>
-              </section>
-            ) : null}
+            <JobMatchTabs job={job} />
             <section className="rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Job description</h2>
               <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/90">
@@ -91,11 +79,20 @@ export default async function JobDetail({
                   <a
                     className="btn-secondary no-underline"
                     href={`/api/jobs/${job.id}/resume.pdf`}
-                    download={tailoredResumeDownloadName(job.title)}
+                    download={psDownloadName(job.title)}
                     target="_blank"
                     rel="noreferrer"
                   >
                     Save resume PDF
+                  </a>
+                ) : null}
+                {job.cover ? (
+                  <a
+                    className="btn-secondary no-underline"
+                    href={`/api/jobs/${job.id}/cover.pdf?download=1`}
+                    download={coverLetterDownloadName(job.title)}
+                  >
+                    Save cover letter PDF
                   </a>
                 ) : null}
                 <StatusButtons jobId={job.id} />

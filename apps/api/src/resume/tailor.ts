@@ -8,16 +8,21 @@ import { MASTER_RESUME_YAML, OUTPUTS_DIR, PROJECT_ROOT, ensureDataDirs } from ".
 import { JobsService } from "../jobs/jobs.service";
 import { LLMError, chatJson, chatText } from "../llm/llm";
 import { tailoredResumeStem } from "./filename";
-import { resumeToPdf } from "./pdf";
+import { coverLetterToPdf, resumeToPdf } from "./pdf";
 import { ResumeData, normalizeResume, resumeToMarkdown } from "./schema";
 
-export function loadMasterResumeData(): ResumeData {
+export function masterResumeFilePath(): string {
   const prefs = getPreferences();
   let path = join(PROJECT_ROOT, prefs.master_resume_path);
   if (!existsSync(path)) path = MASTER_RESUME_YAML;
   if (!existsSync(path)) {
     throw new Error("Master resume not found. Edit data/master_resume.yaml");
   }
+  return path;
+}
+
+export function loadMasterResumeData(): ResumeData {
+  const path = masterResumeFilePath();
   const data = yaml.load(readFileSync(path, "utf8")) as ResumeData;
   return normalizeResume(data);
 }
@@ -150,6 +155,19 @@ export async function tailorJob(
       const cover = await generateCoverLetter(masterData, job);
       coverPath = join(OUTPUTS_DIR, `${base}_cover.txt`);
       writeFileSync(coverPath, cover, "utf8");
+      const coverPdf = join(OUTPUTS_DIR, `${base}_cover.pdf`);
+      const fmt = (prefs.resume_page_format || "A4").toUpperCase() === "LETTER" ? "Letter" : "A4";
+      await coverLetterToPdf(
+        {
+          name: masterData.name,
+          headline: masterData.headline,
+          jobTitle: job.title,
+          company: job.company,
+          body: cover,
+        },
+        coverPdf,
+        fmt,
+      );
     } catch (exc) {
       console.log(`  Skipping cover letter (${exc instanceof Error ? exc.message : exc})`);
     }

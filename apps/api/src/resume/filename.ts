@@ -1,22 +1,32 @@
 const PREFIX = "PS";
 
-function sanitizeName(text: string): string {
+function slugTitle(text: string): string {
   const cleaned = text
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/[. ]+$/g, "");
-  return cleaned.slice(0, 80) || "Job";
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+  return cleaned || "Job";
 }
 
-/** Download / Save As name, e.g. "PS Senior Frontend Engineer.pdf" */
+/** Download name, e.g. "PS-Senior-Frontend-Engineer.pdf" */
+export function psDownloadName(title: string, opts?: { cover?: boolean; ext?: string }): string {
+  const extra = opts?.cover ? "-cover" : "";
+  return `${PREFIX}-${slugTitle(title)}${extra}.${opts?.ext || "pdf"}`;
+}
+
+/** @deprecated use psDownloadName */
 export function tailoredResumeDownloadName(title: string, ext = "pdf"): string {
-  return `${PREFIX} ${sanitizeName(title)}.${ext}`;
+  return psDownloadName(title, { ext });
 }
 
-/** On-disk stem, unique per job: "PS Senior Frontend Engineer 103" */
+export function coverLetterDownloadName(title: string): string {
+  return psDownloadName(title, { cover: true });
+}
+
+/** On-disk stem, unique per job */
 export function tailoredResumeStem(job: { id: number; title: string }): string {
-  return `${PREFIX} ${sanitizeName(job.title)} ${job.id}`;
+  return `${PREFIX}-${slugTitle(job.title)}-${job.id}`;
 }
 
 export function contentDisposition(filename: string, type: "inline" | "attachment" = "inline"): string {
