@@ -112,7 +112,7 @@ export function heuristicScore(job: Job, roles?: RolesConfig, resumeText = ""): 
   return [h.score, h.rationale];
 }
 
-const RESUME_LABELS: Record<"tailored" | "master" | "none", string> = {
+export const RESUME_LABELS: Record<"tailored" | "master" | "none", string> = {
   tailored: "Tailored resume written for this job",
   master: "Master resume (data/master_resume.yaml)",
   none: "No resume available — titles and skills only",

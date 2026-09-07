@@ -16,10 +16,21 @@ import { createReadStream, existsSync, readFileSync } from "fs";
 import { JobsService } from "./jobs.service";
 import { toJobDto } from "./job.mapper";
 import { JOB_STATUSES, JobStatus, JobStatusValue } from "../common/job-status";
-import { explainScore, scoreJob, statusAfterScore } from "../matching/scorer";
+import {
+  candidateResumeText,
+  explainScore,
+  RESUME_LABELS,
+  scoreJob,
+  statusAfterScore,
+} from "../matching/scorer";
 import { contentDisposition, tailoredResumeDownloadName } from "../resume/filename";
 import { tailorJob } from "../resume/tailor";
 import { LLMError } from "../llm/llm";
+
+function scoringResumeFilename(title: string, source: "tailored" | "master"): string {
+  if (source === "tailored") return tailoredResumeDownloadName(title, "md");
+  return "master_resume.md";
+}
 
 type CreateManualBody = {
   title?: string;
@@ -186,6 +197,37 @@ export class JobsController {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", contentDisposition(tailoredResumeDownloadName(job.title)));
     createReadStream(job.tailoredResumePdfPath).pipe(res);
+  }
+
+  /** Markdown resume that was (or would be) used when scoring this job. */
+  @Get(":id/scoring-resume")
+  async scoringResume(@Param("id", ParseIntPipe) id: number) {
+    const job = await this.jobs.get(id);
+    if (!job) throw new NotFoundException("Job not found");
+    const resume = candidateResumeText(job);
+    if (resume.source === "none" || !resume.text.trim()) {
+      throw new NotFoundException("No resume available for scoring");
+    }
+    return {
+      content: resume.text,
+      source: resume.source,
+      label: RESUME_LABELS[resume.source],
+      filename: scoringResumeFilename(job.title, resume.source),
+    };
+  }
+
+  @Get(":id/scoring-resume.md")
+  async scoringResumeDownload(@Param("id", ParseIntPipe) id: number, @Res() res: Response) {
+    const job = await this.jobs.get(id);
+    if (!job) throw new NotFoundException("Job not found");
+    const resume = candidateResumeText(job);
+    if (resume.source === "none" || !resume.text.trim()) {
+      throw new NotFoundException("No resume available for scoring");
+    }
+    const filename = scoringResumeFilename(job.title, resume.source);
+    res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+    res.setHeader("Content-Disposition", contentDisposition(filename, "attachment"));
+    res.send(resume.text);
   }
 
   @Get(":id")
