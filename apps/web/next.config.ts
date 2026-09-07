@@ -5,6 +5,6 @@ import type { NextConfig } from "next";
  * so Vercel can use API_URL from runtime env (build-time rewrites cannot).
  * SSR still calls Nest via API_URL in lib/api.ts / lib/server-api.ts.
  */
-const nextConfig: NextConfig = {};
+const config = {} satisfies NextConfig;
 
-export default nextConfig;
+export default config;
