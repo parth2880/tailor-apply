@@ -4,7 +4,7 @@ import { Command } from "commander";
 import { config as loadDotenv } from "dotenv";
 import { join } from "path";
 import { AppModule } from "./app.module";
-import { PROJECT_ROOT, ensureDataDirs } from "./common/paths";
+import { PROJECT_ROOT, defaultDatabaseUrl, ensureDataDirs } from "./common/paths";
 import { JobsService } from "./jobs/jobs.service";
 import { LinkedInSession } from "./linkedin/session";
 import { runPipeline } from "./pipeline/pipeline";
@@ -12,9 +12,7 @@ import { defaultSearchOptions } from "./pipeline/search-options";
 import { getRolesConfig } from "./common/config";
 
 loadDotenv({ path: join(PROJECT_ROOT, ".env") });
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = `file:${join(PROJECT_ROOT, "data", "app.db")}`;
-}
+process.env.DATABASE_URL = defaultDatabaseUrl();
 
 async function withApp<T>(fn: (jobs: JobsService) => Promise<T>): Promise<T> {
   ensureDataDirs();

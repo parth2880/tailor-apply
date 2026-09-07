@@ -1,7 +1,6 @@
 import { BrowserContext, Page, chromium } from "playwright";
-import { join } from "path";
 import { getPreferences } from "../common/config";
-import { PROJECT_ROOT, ensureDataDirs } from "../common/paths";
+import { BROWSER_PROFILE, ensureDataDirs } from "../common/paths";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -17,7 +16,7 @@ export class LinkedInSession {
   constructor(opts?: { profileDir?: string; headless?: boolean }) {
     const prefs = getPreferences();
     ensureDataDirs();
-    this.profileDir = opts?.profileDir || join(PROJECT_ROOT, prefs.browser_profile_dir);
+    this.profileDir = opts?.profileDir || BROWSER_PROFILE;
     this.headless = opts?.headless ?? prefs.headless;
     this.baseUrl = prefs.linkedin_base_url.replace(/\/$/, "");
   }

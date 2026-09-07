@@ -1,12 +1,12 @@
 .env
 
-# Local data & browser session
-data/app.db
-data/app.db-*
-data/outputs/
-data/browser_profile/
-data/apply_state.json
-data/last_search_filters.json
+# Local runtime data — never commit (repo root and apps/api copy)
+**/data/app.db
+**/data/app.db-*
+**/data/outputs/
+**/data/browser_profile/
+**/data/apply_state.json
+**/data/last_search_filters.json
 *.pdf
 
 # OS / IDE

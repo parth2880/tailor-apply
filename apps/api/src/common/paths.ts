@@ -6,23 +6,50 @@ export function isServerlessRuntime(): boolean {
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
-function findProjectRoot(): string {
-  const candidates = [
-    process.env.PROJECT_ROOT,
-    // Self-contained API package (config copied under apps/api for Vercel root=apps/api)
-    join(__dirname, "..", ".."),
-    process.cwd(),
-    join(process.cwd(), "..", ".."),
-    join(__dirname, "..", "..", "..", ".."),
-    join(__dirname, "..", "..", ".."),
-  ].filter(Boolean) as string[];
+function walkParents(start: string, depth = 8): string[] {
+  const out: string[] = [];
+  let dir = resolve(start);
+  for (let i = 0; i < depth; i++) {
+    out.push(dir);
+    const parent = resolve(dir, "..");
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return out;
+}
 
-  for (const dir of candidates) {
-    const root = resolve(dir);
-    if (existsSync(join(root, "config", "roles.yaml"))) {
-      return root;
+/**
+ * Prefer the monorepo root (`pnpm-workspace.yaml` + `config/roles.yaml`) so local
+ * data always lives in `<repo>/data`. `apps/api` also has a copied `config/` for
+ * Vercel — do not treat that as the root when the workspace is present, or jobs
+ * and the LinkedIn profile split across two folders and look like they vanished.
+ */
+function findProjectRoot(): string {
+  if (process.env.PROJECT_ROOT) return resolve(process.env.PROJECT_ROOT);
+
+  const starts = [
+    process.cwd(),
+    join(__dirname, "..", "..", "..", ".."),
+    join(__dirname, "..", ".."),
+  ];
+  const seen = new Set<string>();
+  const dirs: string[] = [];
+  for (const start of starts) {
+    for (const dir of walkParents(start)) {
+      if (seen.has(dir)) continue;
+      seen.add(dir);
+      dirs.push(dir);
     }
   }
+
+  const monorepo = dirs.find(
+    (d) => existsSync(join(d, "pnpm-workspace.yaml")) && existsSync(join(d, "config", "roles.yaml")),
+  );
+  if (monorepo) return monorepo;
+
+  const packaged = dirs.find((d) => existsSync(join(d, "config", "roles.yaml")));
+  if (packaged) return packaged;
+
   return resolve(process.cwd());
 }
 
@@ -62,5 +89,10 @@ export function ensureDataDirs(): void {
 }
 
 export function defaultDatabaseUrl(): string {
-  return process.env.DATABASE_URL || `file:${DB_PATH}`;
+  const raw = (process.env.DATABASE_URL || "").trim();
+  if (!raw) return `file:${DB_PATH}`;
+  const relativeSqlite =
+    raw.startsWith("file:") && !raw.startsWith("file:/") && !/^file:[A-Za-z]:/.test(raw);
+  if (relativeSqlite) return `file:${DB_PATH}`;
+  return raw;
 }
