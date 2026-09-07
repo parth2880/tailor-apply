@@ -59,7 +59,9 @@ export default async function JobDetail({
                 </div>
               </div>
             </header>
-            {job.score_breakdown ? <ScoreBreakdownCard breakdown={job.score_breakdown} /> : null}
+            {job.score_breakdown ? (
+              <ScoreBreakdownCard breakdown={job.score_breakdown} jobId={job.id} />
+            ) : null}
             {job.cover ? (
               <section className="mb-5 rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-muted">Cover letter</h2>

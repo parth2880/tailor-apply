@@ -1,4 +1,5 @@
 import type { ScoreBreakdown } from "@/lib/types";
+import { ScoringResumeActions } from "@/components/ScoringResumeActions";
 
 function signed(n: number) {
   if (n > 0) return `+${n}`;
@@ -23,7 +24,13 @@ function TagList({ items, empty }: { items: string[]; empty: string }) {
   );
 }
 
-export function ScoreBreakdownCard({ breakdown }: { breakdown: ScoreBreakdown }) {
+export function ScoreBreakdownCard({
+  breakdown,
+  jobId,
+}: {
+  breakdown: ScoreBreakdown;
+  jobId: number;
+}) {
   const llmPct = Math.round(breakdown.weights.llm * 100);
   const heurPct = Math.round(breakdown.weights.heuristic * 100);
   const scored = breakdown.final_score != null;
@@ -65,8 +72,12 @@ export function ScoreBreakdownCard({ breakdown }: { breakdown: ScoreBreakdown })
       </div>
 
       <div className="mb-5 rounded-2xl border border-line/80 bg-cream-100/60 px-4 py-3">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Resume used</p>
-        <p className="mt-1 text-sm font-medium text-ink">{breakdown.resume_label}</p>
+        <p className="mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Resume used</p>
+        <ScoringResumeActions
+          jobId={jobId}
+          resumeSource={breakdown.resume_source}
+          resumeLabel={breakdown.resume_label}
+        />
       </div>
 
       {breakdown.rationale ? (
