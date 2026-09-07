@@ -43,32 +43,20 @@ Daily cron-friendly script: `scripts/daily_run.sh`.
 
 ## Deploying web + API separately
 
-### Web (Vercel) ✅
+The UI talks to Nest via `API_URL` (SSR) and Next rewrites of `/api/*`. If you only deploy the web app without pointing it at a reachable API, you get: *Could not reach the API…*
 
-Deploy `apps/web` (or the monorepo with Root Directory `apps/web`).
+On the **API** service:
 
-- Set **`API_URL=https://your-api-host`** (no trailing slash) for Production + Preview, then redeploy.
-- Browser `/api/*` is proxied at runtime; SSR also uses `API_URL`.
+- Start with `pnpm --filter @job-automator/api start:prod` (after `build`), or your platform’s Node start command on `apps/api`.
+- Set `DATABASE_URL`, LLM keys, and `CORS_ORIGIN=https://your-web-host` (comma-separated origins, or `*`).
+- Listen address defaults to `0.0.0.0`; port from `PORT` / `API_PORT` (default `3001`).
 
-### API — prefer Railway / Render / Fly / Docker ⚠️
+On the **web** service:
 
-This Nest API uses **SQLite + Playwright**. That fits a **persistent Node host**, not Vercel’s read-only serverless filesystem.
+- Set **`API_URL=https://your-api-host`** (no trailing slash) at **build and runtime** so rewrites and server fetches hit Nest, not `127.0.0.1:3001`.
+- Rebuild/redeploy the web app after changing `API_URL`.
 
-**Recommended:** deploy with the included [`apps/api/Dockerfile`](apps/api/Dockerfile) on Railway/Render/Fly:
-
-- Start command / Docker image from that Dockerfile (or `pnpm --filter @job-automator/api start:prod` after build).
-- Env: `DATABASE_URL`, LLM keys, `CORS_ORIGIN=https://your-web.vercel.app`.
-- Bind `0.0.0.0`; port from `PORT` (default `3001`).
-
-**If the API is already on Vercel** (and you see `FUNCTION_INVOCATION_FAILED` / 500):
-
-1. Vercel project **Root Directory** = `apps/api`.
-2. Redeploy this branch (API now writes SQLite under `/tmp` and ships `config/` + resume inside the package).
-3. Set `CORS_ORIGIN` to your web URL.
-4. Open `https://your-api.vercel.app/health` — you should get `{ "ok": true }`.
-5. Know the limits: **/tmp DB is wiped on cold starts**; **LinkedIn browser search will not work** on Vercel. Use Railway (or similar) for the full pipeline.
-
-Local monorepo `pnpm dev` still works without deploy env vars.
+Local monorepo `pnpm dev` still works without these vars.
 
 ## Free LLM options
 

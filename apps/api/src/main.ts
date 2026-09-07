@@ -21,6 +21,45 @@ function corsOrigins(): string | string[] | boolean {
   return list;
 }
 
+function corsOrigins(): string | string[] | boolean {
+  const raw = process.env.CORS_ORIGIN || process.env.WEB_ORIGIN;
+  if (!raw || raw.trim() === "*") return true;
+  const list = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!list.length) {
+    return ["http://127.0.0.1:3000", "http://localhost:3000"];
+  }
+  return list;
+}
+
+function corsOrigins(): string | string[] | boolean {
+  const raw = process.env.CORS_ORIGIN || process.env.WEB_ORIGIN;
+  if (!raw || raw.trim() === "*") return true;
+  const list = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!list.length) {
+    return ["http://127.0.0.1:3000", "http://localhost:3000"];
+  }
+  return list;
+}
+
+function corsOrigins(): string | string[] | boolean {
+  const raw = process.env.CORS_ORIGIN || process.env.WEB_ORIGIN;
+  if (!raw || raw.trim() === "*") return true;
+  const list = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!list.length) {
+    return ["http://127.0.0.1:3000", "http://localhost:3000"];
+  }
+  return list;
+}
+
 async function bootstrap() {
   ensureDataDirs();
   const app = await NestFactory.create(AppModule);
