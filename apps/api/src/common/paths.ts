@@ -72,6 +72,8 @@ export const DB_PATH = join(DATA_DIR, "app.db");
 export const ROLES_CONFIG = join(CONFIG_DIR, "roles.yaml");
 export const PREFERENCES_CONFIG = join(CONFIG_DIR, "preferences.yaml");
 export const MASTER_RESUME_YAML = join(DATA_DIR, "master_resume.yaml");
+export const RESUMES_DIR = join(DATA_DIR, "resumes");
+export const RESUME_INDEX = join(RESUMES_DIR, "index.json");
 export const BROWSER_PROFILE = join(DATA_DIR, "browser_profile");
 
 /** Seed resume YAML shipped with the API package (read-only on Vercel). */
@@ -81,6 +83,7 @@ export function ensureDataDirs(): void {
   mkdirSync(DATA_DIR, { recursive: true });
   mkdirSync(OUTPUTS_DIR, { recursive: true });
   mkdirSync(BROWSER_PROFILE, { recursive: true });
+  mkdirSync(RESUMES_DIR, { recursive: true });
 
   // Seed master resume into the writable data dir when missing (serverless /tmp).
   if (!existsSync(MASTER_RESUME_YAML) && existsSync(BUNDLED_MASTER_RESUME)) {

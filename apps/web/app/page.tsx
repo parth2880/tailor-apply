@@ -15,6 +15,59 @@ function first(v: string | string[] | undefined): string {
   return v || "";
 }
 
+function jobRowTone(status: string) {
+  if (status === "applied") {
+    return {
+      card: "rounded-3xl border border-violet-200 bg-violet-50/90 p-4 shadow-sm ring-1 ring-violet-100",
+      row: "group border-b border-violet-100 bg-violet-50/80 last:border-b-0 hover:bg-violet-100/70",
+      sticky:
+        "sticky right-0 z-10 border-l border-violet-200 bg-violet-50/90 px-3 py-3 shadow-[-10px_0_12px_-8px_rgba(15,23,42,0.12)] group-hover:bg-violet-100/70",
+    };
+  }
+  if (status === "skipped") {
+    return {
+      card: "rounded-3xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm",
+      row: "group border-b border-slate-100 bg-slate-50/70 last:border-b-0 hover:bg-slate-100/80",
+      sticky:
+        "sticky right-0 z-10 border-l border-slate-200 bg-slate-50/90 px-3 py-3 shadow-[-10px_0_12px_-8px_rgba(15,23,42,0.12)] group-hover:bg-slate-100/80",
+    };
+  }
+  return {
+    card: "rounded-3xl border border-line bg-white p-4 shadow-sm",
+    row: "group border-b border-line last:border-b-0 hover:bg-slate-50/80",
+    sticky:
+      "sticky right-0 z-10 border-l border-line bg-white px-3 py-3 shadow-[-10px_0_12px_-8px_rgba(15,23,42,0.12)] group-hover:bg-slate-50",
+  };
+}
+
+function formatSearchTime(raw?: string | null): string {
+  if (!raw) return "—";
+  const trimmed = raw.trim();
+  const iso = trimmed.includes("T")
+    ? trimmed.endsWith("Z")
+      ? trimmed
+      : `${trimmed}Z`
+    : `${trimmed}T00:00:00Z`;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return trimmed.replace("T", " ").slice(0, 16);
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function shortPosted(text: string): string {
+  const raw = (text || "recent").replace(/\s+/g, " ").trim();
+  const first = raw.split(/[·\n]/)[0]?.trim() || raw;
+  const cut = first.replace(/\s*within the past\b.*$/i, "").trim();
+  const label = cut || "recent";
+  if (label.length <= 18) return label;
+  return `${label.slice(0, 16).trimEnd()}…`;
+}
+
 function qs(filters: Record<string, string>, extra: Record<string, string> = {}): string {
   const params = new URLSearchParams();
   const merged = { ...filters, ...extra };
@@ -142,47 +195,61 @@ export default async function Home({
           <>
             {/* Mobile card list */}
             <ul className="grid gap-3 md:hidden">
-              {jobs.map((job) => (
-                <li key={job.id} className="rounded-3xl border border-line bg-white p-4 shadow-sm">
-                  <div className="flex gap-3">
-                    <span
-                      className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-bold tabular-nums ${scoreTone(job.match_score)}`}
-                    >
-                      {job.match_score ?? "—"}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1.5 flex flex-wrap gap-1.5">
-                        <StatusBadge status={job.status} />
-                        <ApplyBadge easy={job.is_easy_apply} />
+              {jobs.map((job) => {
+                const tone = jobRowTone(job.status);
+                const applied = job.status === "applied";
+                return (
+                  <li key={job.id} className={tone.card}>
+                    <div className="flex gap-3">
+                      <span
+                        className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-bold tabular-nums ${scoreTone(job.match_score)}`}
+                      >
+                        {job.match_score ?? "—"}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex flex-wrap gap-1.5">
+                          <StatusBadge status={job.status} />
+                          <ApplyBadge easy={job.is_easy_apply} />
+                        </div>
+                        <Link
+                          className={`block text-base font-semibold leading-snug no-underline hover:text-brand ${applied ? "text-violet-950" : "text-ink"}`}
+                          href={`/jobs/${job.id}`}
+                        >
+                          {job.title}
+                        </Link>
+                        <p className="mt-1 text-sm text-ink-muted">
+                          <span className={`font-medium ${applied ? "text-violet-950" : "text-ink"}`}>{job.company || "—"}</span>
+                          <span className="mx-1">·</span>
+                          {job.location || "—"}
+                        </p>
+                        <p className="mt-0.5 text-xs text-ink-muted">
+                          {shortPosted(job.posted_text)}
+                          <span className="mx-1">·</span>
+                          added {formatSearchTime(job.last_seen_at || job.created_at)}
+                          {applied && job.applied_at ? (
+                            <>
+                              <span className="mx-1">·</span>
+                              applied {job.applied_at.slice(0, 10)}
+                            </>
+                          ) : null}
+                        </p>
+                        <p className="mt-2 line-clamp-2 text-sm text-ink-muted">
+                          {job.apply_error || job.match_rationale || "Not scored yet"}
+                        </p>
                       </div>
-                      <Link className="block text-base font-semibold leading-snug text-ink no-underline hover:text-brand" href={`/jobs/${job.id}`}>
-                        {job.title}
-                      </Link>
-                      <p className="mt-1 text-sm text-ink-muted">
-                        <span className="font-medium text-ink">{job.company || "—"}</span>
-                        <span className="mx-1">·</span>
-                        {job.location || "—"}
-                      </p>
-                      <p className="mt-0.5 text-xs text-ink-muted">
-                        {job.posted_text || "recent"}
-                        <span className="mx-1">·</span>
-                        added {job.created_at?.slice(0, 10) || "—"}
-                      </p>
-                      <p className="mt-2 line-clamp-2 text-sm text-ink-muted">
-                        {job.apply_error || job.match_rationale || "Not scored yet"}
-                      </p>
                     </div>
-                  </div>
-                  <div className="mt-3 border-t border-line pt-3">
-                    <JobRowActions
-                      jobId={job.id}
-                      jobTitle={job.title}
-                      linkedinUrl={job.url}
-                      hasPdf={Boolean(job.tailored_resume_pdf_path)}
-                    />
-                  </div>
-                </li>
-              ))}
+                    <div className={`mt-3 border-t pt-3 ${applied ? "border-violet-200" : "border-line"}`}>
+                      <JobRowActions
+                        jobId={job.id}
+                        jobTitle={job.title}
+                        linkedinUrl={job.url}
+                        hasPdf={Boolean(job.tailored_resume_pdf_path)}
+                        status={job.status}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
 
             {/* Desktop table */}
@@ -190,7 +257,7 @@ export default async function Home({
               <table className="w-full min-w-[1100px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line bg-slate-50 text-left text-[0.72rem] font-semibold uppercase tracking-wide text-ink-muted">
-                    {["Score", "Title", "Company", "Location", "Posted", "Added", "Apply type", "Status", "Match note"].map(
+                    {["Score", "Title", "Company", "Location", "Status", "Posted", "Added", "Apply type", "Match note"].map(
                       (h) => (
                         <th key={h} className="whitespace-nowrap px-3 py-3">
                           {h}
@@ -203,45 +270,65 @@ export default async function Home({
                   </tr>
                 </thead>
                 <tbody>
-                  {jobs.map((job) => (
-                    <tr key={job.id} className="group border-b border-line last:border-b-0 hover:bg-slate-50/80">
-                      <td className="px-3 py-3 text-center">
-                        <span
-                          className={`inline-flex min-w-10 items-center justify-center rounded-xl px-2 py-1 text-base font-bold tabular-nums ${scoreTone(job.match_score)}`}
+                  {jobs.map((job) => {
+                    const tone = jobRowTone(job.status);
+                    const applied = job.status === "applied";
+                    return (
+                      <tr key={job.id} className={tone.row}>
+                        <td className={`px-3 py-3 text-center ${applied ? "border-l-4 border-violet-500" : ""}`}>
+                          <span
+                            className={`inline-flex min-w-10 items-center justify-center rounded-xl px-2 py-1 text-base font-bold tabular-nums ${scoreTone(job.match_score)}`}
+                          >
+                            {job.match_score ?? "—"}
+                          </span>
+                        </td>
+                        <td className="max-w-[16rem] px-3 py-3">
+                          <Link
+                            className={`font-semibold no-underline hover:text-brand ${applied ? "text-violet-950" : "text-ink"}`}
+                            href={`/jobs/${job.id}`}
+                          >
+                            {job.title}
+                          </Link>
+                          {applied && job.applied_at ? (
+                            <p className="mt-0.5 text-xs font-medium text-violet-700">Applied {job.applied_at.slice(0, 10)}</p>
+                          ) : null}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-3">{job.company || "—"}</td>
+                        <td className="max-w-[10rem] truncate px-3 py-3 text-ink-muted" title={job.location || undefined}>
+                          {job.location || "—"}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-3">
+                          <StatusBadge status={job.status} />
+                        </td>
+                        <td
+                          className="max-w-[7.5rem] truncate px-3 py-3 text-ink-muted"
+                          title={job.posted_text || undefined}
                         >
-                          {job.match_score ?? "—"}
-                        </span>
-                      </td>
-                      <td className="max-w-[16rem] px-3 py-3">
-                        <Link className="font-semibold text-ink no-underline hover:text-brand" href={`/jobs/${job.id}`}>
-                          {job.title}
-                        </Link>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-3">{job.company || "—"}</td>
-                      <td className="whitespace-nowrap px-3 py-3 text-ink-muted">{job.location || "—"}</td>
-                      <td className="whitespace-nowrap px-3 py-3 text-ink-muted">{job.posted_text || "recent"}</td>
-                      <td className="whitespace-nowrap px-3 py-3 text-ink-muted">{job.created_at?.slice(0, 10) || "—"}</td>
-                      <td className="whitespace-nowrap px-3 py-3">
-                        <ApplyBadge easy={job.is_easy_apply} />
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-3">
-                        <StatusBadge status={job.status} />
-                      </td>
-                      <td className="max-w-[16rem] px-3 py-3">
-                        <span className="line-clamp-2 text-ink-muted">
-                          {job.apply_error || job.match_rationale || "Not scored yet"}
-                        </span>
-                      </td>
-                      <td className="sticky right-0 z-10 border-l border-line bg-white px-3 py-3 shadow-[-10px_0_12px_-8px_rgba(15,23,42,0.12)] group-hover:bg-slate-50">
-                        <JobRowActions
-                          jobId={job.id}
-                          jobTitle={job.title}
-                          linkedinUrl={job.url}
-                          hasPdf={Boolean(job.tailored_resume_pdf_path)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                          {shortPosted(job.posted_text)}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-3 text-ink-muted">
+                          {formatSearchTime(job.last_seen_at || job.created_at)}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-3">
+                          <ApplyBadge easy={job.is_easy_apply} />
+                        </td>
+                        <td className="max-w-[16rem] px-3 py-3">
+                          <span className="line-clamp-2 text-ink-muted">
+                            {job.apply_error || job.match_rationale || "Not scored yet"}
+                          </span>
+                        </td>
+                        <td className={tone.sticky}>
+                          <JobRowActions
+                            jobId={job.id}
+                            jobTitle={job.title}
+                            linkedinUrl={job.url}
+                            hasPdf={Boolean(job.tailored_resume_pdf_path)}
+                            status={job.status}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

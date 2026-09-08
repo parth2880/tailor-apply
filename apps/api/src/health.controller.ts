@@ -21,8 +21,9 @@ export class HealthController {
       data_dir: DATA_DIR,
       database_configured: Boolean(defaultDatabaseUrl()),
       jobs,
+      linkedin_search: !isServerlessRuntime(),
       note: isServerlessRuntime()
-        ? "Running on serverless: SQLite is ephemeral (/tmp). LinkedIn browser automation is not supported here — use Railway/Render/Fly for full pipeline."
+        ? "Running on serverless: SQLite is ephemeral (/tmp). LinkedIn search is not supported here — use pnpm dev locally, or Railway/Render/Fly for the API."
         : undefined,
     };
   }

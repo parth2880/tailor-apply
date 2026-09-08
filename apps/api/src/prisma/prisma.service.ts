@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS "jobs" (
   "apply_error" TEXT NOT NULL DEFAULT '',
   "applied_at" TEXT,
   "created_at" TEXT NOT NULL DEFAULT '',
-  "updated_at" TEXT NOT NULL DEFAULT ''
+  "updated_at" TEXT NOT NULL DEFAULT '',
+  "last_seen_at" TEXT NOT NULL DEFAULT ''
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "jobs_linkedin_job_id_key" ON "jobs"("linkedin_job_id");
 CREATE INDEX IF NOT EXISTS "idx_jobs_status" ON "jobs"("status");
@@ -46,6 +47,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     for (const stmt of CREATE_JOBS_SQL.split(";").map((s) => s.trim()).filter(Boolean)) {
       await this.$executeRawUnsafe(stmt);
     }
+    try {
+      await this.$executeRawUnsafe(`ALTER TABLE "jobs" ADD COLUMN "last_seen_at" TEXT NOT NULL DEFAULT ''`);
+    } catch {
+      /* column already exists */
+    }
+    await this.$executeRawUnsafe(
+      `UPDATE "jobs" SET "last_seen_at" = "created_at" WHERE "last_seen_at" IS NULL OR "last_seen_at" = ''`,
+    );
     this.logger.log("Database ready");
   }
 

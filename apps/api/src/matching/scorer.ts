@@ -4,7 +4,7 @@ import { RolesConfig, getRolesConfig } from "../common/config";
 import { JobStatus } from "../common/job-status";
 import { JobsService } from "../jobs/jobs.service";
 import { LLMError, chatJson } from "../llm/llm";
-import { loadMasterResumeData } from "../resume/tailor";
+import { loadMasterResumeData, activeResumeLabel } from "../resume/profiles";
 import { resumeToMarkdown } from "../resume/schema";
 
 function norm(text: string): string {
@@ -136,7 +136,7 @@ export function explainScore(job: Job): ScoreBreakdown {
   const overlapPts = h.resumeOverlap.length * 4;
   const remotePts = h.remoteBonus ? 5 : 0;
   const steps = [
-    `Resume used: ${RESUME_LABELS[resume.source]}.`,
+    `Resume used: ${resume.source === "master" ? activeResumeLabel() : RESUME_LABELS[resume.source]}.`,
     `Heuristic starts at 40, then +12 per matching target title, +5 per matching target skill, +4 per skill that appears in both the JD and the resume.`,
     h.remoteBonus ? "Remote bonus: +5 because the listing is remote and remote roles are allowed." : "No remote bonus.",
     h.locNote ? `Location adjustment: ${h.locNote}.` : "No location boost or penalty.",
@@ -151,7 +151,7 @@ export function explainScore(job: Job): ScoreBreakdown {
     blended,
     weights: { llm: LLM_WEIGHT, heuristic: HEURISTIC_WEIGHT },
     resume_source: resume.source,
-    resume_label: RESUME_LABELS[resume.source],
+    resume_label: resume.source === "master" ? activeResumeLabel() : RESUME_LABELS[resume.source],
     title_hits: h.titleHits,
     skill_hits: h.skillHits,
     resume_overlap: h.resumeOverlap,

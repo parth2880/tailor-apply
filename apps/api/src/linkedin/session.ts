@@ -1,4 +1,5 @@
 import { BrowserContext, Page, chromium } from "playwright";
+import { assertChromiumAvailable, wrapPlaywrightLaunch } from "../common/browser";
 import { getPreferences } from "../common/config";
 import { BROWSER_PROFILE, ensureDataDirs } from "../common/paths";
 
@@ -22,13 +23,18 @@ export class LinkedInSession {
   }
 
   async start(): Promise<Page> {
-    this.context = await chromium.launchPersistentContext(this.profileDir, {
-      headless: this.headless,
-      viewport: { width: 1280, height: 900 },
-      locale: "en-US",
-      args: ["--disable-blink-features=AutomationControlled"],
-    });
-    this.page = this.context.pages()[0] || (await this.context.newPage());
+    assertChromiumAvailable();
+    try {
+      this.context = await chromium.launchPersistentContext(this.profileDir, {
+        headless: this.headless,
+        viewport: { width: 1280, height: 900 },
+        locale: "en-US",
+        args: ["--disable-blink-features=AutomationControlled"],
+      });
+    } catch (exc) {
+      wrapPlaywrightLaunch(exc);
+    }
+    this.page = this.context!.pages()[0] || (await this.context!.newPage());
     return this.page;
   }
 

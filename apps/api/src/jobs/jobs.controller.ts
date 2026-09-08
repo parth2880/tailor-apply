@@ -21,7 +21,12 @@ import { contentDisposition, psDownloadName } from "../resume/filename";
 import { getCoverLetterPdf } from "../resume/cover-pdf";
 import { getScoringResume } from "../resume/scoring-resume";
 import { tailorJob } from "../resume/tailor";
-import { LLMError } from "../llm/llm";
+import { clearLlmOverride, LLMError, setLlmOverride } from "../llm/llm";
+
+type TailorBody = {
+  llm_provider?: string | null;
+  llm_model?: string | null;
+};
 
 type CreateManualBody = {
   title?: string;
@@ -159,15 +164,16 @@ export class JobsController {
   }
 
   @Post(":id/tailor")
-  async tailorOne(@Param("id", ParseIntPipe) id: number) {
+  async tailorOne(@Param("id", ParseIntPipe) id: number, @Body() body: TailorBody) {
     let job = await this.jobs.get(id);
     if (!job) throw new NotFoundException("Job not found");
-    if (job.matchScore == null) {
-      const [score, rationale] = await scoreJob(job, undefined, true);
-      await this.jobs.updateScore(id, score, rationale, JobStatus.SCORED);
-      job = (await this.jobs.get(id))!;
-    }
+    setLlmOverride(body?.llm_provider, body?.llm_model);
     try {
+      if (job.matchScore == null) {
+        const [score, rationale] = await scoreJob(job, undefined, true);
+        await this.jobs.updateScore(id, score, rationale, JobStatus.SCORED);
+        job = (await this.jobs.get(id))!;
+      }
       const tailored = await tailorJob(this.jobs, job);
       const [score, rationale] = await scoreJob(tailored, undefined, true);
       await this.jobs.updateScore(tailored.id, score, rationale, JobStatus.READY);
@@ -176,6 +182,8 @@ export class JobsController {
     } catch (exc) {
       const msg = exc instanceof LLMError || exc instanceof Error ? exc.message : String(exc);
       throw new HttpException(msg, HttpStatus.BAD_GATEWAY);
+    } finally {
+      clearLlmOverride();
     }
   }
 

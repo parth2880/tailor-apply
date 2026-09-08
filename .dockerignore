@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+.git
+**/.next
+**/dist
+**/*.tsbuildinfo
+.env
+**/.env
+data/app.db
+data/app.db-*
+data/browser_profile
+data/outputs
+**/*.pdf
+apps/web
+.DS_Store

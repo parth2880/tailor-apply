@@ -22,6 +22,7 @@ export function toJobDto(job: Job): JobDto {
     applied_at: job.appliedAt,
     created_at: job.createdAt,
     updated_at: job.updatedAt,
+    last_seen_at: job.lastSeenAt || job.createdAt,
   };
 }
 
@@ -80,7 +81,7 @@ export function orderByFor(sort: string): Prisma.JobOrderByWithRelationInput[] {
     case "updated":
       return [{ updatedAt: "desc" }, { id: "desc" }];
     default:
-      return [{ createdAt: "desc" }, { id: "desc" }];
+      return [{ lastSeenAt: "desc" }, { createdAt: "desc" }, { id: "desc" }];
   }
 }
 

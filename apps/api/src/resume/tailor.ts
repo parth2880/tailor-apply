@@ -1,31 +1,17 @@
-import { readFileSync, existsSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
-import * as yaml from "js-yaml";
 import { Job } from "@prisma/client";
 import { getPreferences, getRolesConfig } from "../common/config";
 import { JobStatus } from "../common/job-status";
-import { MASTER_RESUME_YAML, OUTPUTS_DIR, PROJECT_ROOT, ensureDataDirs } from "../common/paths";
+import { OUTPUTS_DIR, ensureDataDirs } from "../common/paths";
 import { JobsService } from "../jobs/jobs.service";
 import { LLMError, chatJson, chatText } from "../llm/llm";
 import { tailoredResumeStem } from "./filename";
 import { coverLetterToPdf, resumeToPdf } from "./pdf";
+import { loadMasterResumeData } from "./profiles";
 import { ResumeData, normalizeResume, resumeToMarkdown } from "./schema";
 
-export function masterResumeFilePath(): string {
-  const prefs = getPreferences();
-  let path = join(PROJECT_ROOT, prefs.master_resume_path);
-  if (!existsSync(path)) path = MASTER_RESUME_YAML;
-  if (!existsSync(path)) {
-    throw new Error("Master resume not found. Edit data/master_resume.yaml");
-  }
-  return path;
-}
-
-export function loadMasterResumeData(): ResumeData {
-  const path = masterResumeFilePath();
-  const data = yaml.load(readFileSync(path, "utf8")) as ResumeData;
-  return normalizeResume(data);
-}
+export { loadMasterResumeData, masterResumeFilePath } from "./profiles";
 
 function fallbackProfile(master: ResumeData, job: Job): string {
   const base =

@@ -357,13 +357,8 @@ export async function searchJobs(
   const queries = keywordQueries(roles, options);
   const discovered: DiscoveredJob[] = [];
   const seenIds = new Set<string>();
-  const daily = await jobs.countToday();
-  const remainingToday = Math.max(0, prefs.max_jobs_per_day - daily);
-  const budget = Math.min(roles.max_jobs_per_run, remainingToday);
-  if (budget <= 0) {
-    console.log("Daily job discovery budget reached; skipping search.");
-    return [];
-  }
+  const budget = Math.max(1, Math.min(80, options.max_jobs || roles.max_jobs_per_run || 20));
+  console.log(`This run will keep up to ${budget} on-target job(s).`);
 
   const useEaFilter = options.easy_apply;
   const searchLocs = searchLocations(roles);

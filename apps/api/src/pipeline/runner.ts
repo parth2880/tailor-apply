@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { BrowserUnavailableError, BROWSER_UNAVAILABLE_MESSAGE, isPlaywrightMissing } from "../common/browser";
 import { JobsService } from "../jobs/jobs.service";
 import { JobStatus } from "../common/job-status";
 import { getRolesConfig, reloadConfigs } from "../common/config";
@@ -134,8 +135,14 @@ export class PipelineRunner {
       const err = `${exc instanceof Error ? exc.constructor.name : "Error"}: ${exc instanceof Error ? exc.message : exc}`;
       this.appendLog(err);
       if (exc instanceof Error && exc.stack) this.appendLog(exc.stack.slice(-1500));
+      const friendly =
+        exc instanceof BrowserUnavailableError
+          ? exc.message
+          : isPlaywrightMissing(exc)
+            ? BROWSER_UNAVAILABLE_MESSAGE
+            : "Pipeline failed. Check the log and LinkedIn login.";
       this.state.status = "error";
-      this.state.message = "Pipeline failed. Check the log and LinkedIn login.";
+      this.state.message = friendly;
       this.state.step = "error";
       this.state.finished_at = new Date().toISOString();
       this.state.error = err;

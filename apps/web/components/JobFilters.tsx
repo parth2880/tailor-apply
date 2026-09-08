@@ -87,12 +87,26 @@ export function JobFilters({ initial }: { initial: JobFilterValues }) {
           </label>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto sm:shrink-0">
             <select
+              className="field min-w-0 sm:min-w-36"
+              value={values.status}
+              aria-label="Status"
+              onChange={(e) => patch({ status: e.target.value })}
+            >
+              <option value="">All statuses</option>
+              <option value="ready">Ready</option>
+              <option value="applied">Applied</option>
+              <option value="scored">Scored</option>
+              <option value="new">New</option>
+              <option value="not_easy_apply">External</option>
+              <option value="skipped">Skipped</option>
+            </select>
+            <select
               className="field min-w-0"
               value={values.sort}
               aria-label="Sort by"
               onChange={(e) => patch({ sort: e.target.value })}
             >
-              <option value="newest">Newest first</option>
+              <option value="newest">Latest search first</option>
               <option value="oldest">Oldest first</option>
               <option value="score_desc">Highest score</option>
               <option value="score_asc">Lowest score</option>

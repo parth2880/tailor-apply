@@ -1,0 +1,153 @@
+name: Parth Sharma
+headline: Frontend Developer | React · TypeScript · UI/UX
+profile: >-
+  Frontend Developer with 3.5 years of commercial experience specialising in React,
+  TypeScript, HTML, and CSS. Proven track record of delivering high-performance web
+  applications and building scalable, reusable UI component libraries for international
+  European clients (including Toolstation Netherlands and UK platforms). Experienced in
+  collaborating closely with UI/UX designers to translate designs into pixel-perfect
+  interfaces, integrating REST APIs, and collaborating with backend teams
+  (Node.js/NestJS). Strong focus on code quality, performance, and modern frontend
+  architecture.
+email: parthinteract@gmail.com
+phone: +91 78768-00210
+location: India
+linkedin: https://www.linkedin.com/in/parthsharma2880/
+github: https://github.com/parth2880
+portfolio: https://parth-interact.vercel.app/
+education:
+  - school: Meri College of Engineering and Technology
+    location: India
+    degree: B.Tech in Computer Science & Engineering
+    dates: 2022 – 2026
+    details: []
+experience:
+  - company: Tedekstra
+    location: Remote
+    title: User Experience Lead / Frontend Developer
+    dates: 10/2025 – Present
+    bullets:
+      - >-
+        Designed and developed new React and TypeScript modules across live UK product
+        platforms, ensuring high performance, accessibility, and clean code.
+      - >-
+        Collaborated closely with UI/UX designers to implement pixel-perfect, responsive
+        interfaces, including booking, authentication, and calendar flows.
+      - >-
+        Integrated frontend applications with backend services via REST APIs, handling
+        complex data flows, RBAC, and internationalisation (i18n).
+      - >-
+        Maintained and optimised role-based dashboards, calendars, and form modules,
+        collaborating with backend developers to align frontend-backend contracts.
+  - company: WebReinvent Technologies Pvt. Ltd.
+    location: Delhi, India
+    title: Software Engineer (Frontend)
+    dates: 01/2024 – 10/2025
+    bullets:
+      - >-
+        Built and maintained scalable, reusable UI component libraries based on
+        atomic-design principles, improving frontend development efficiency across
+        teams.
+      - >-
+        Contributed to the frontend rebuild of the Toolstation e-commerce platform
+        (serving 600+ stores in Europe), driving a 35% improvement in application
+        performance.
+      - >-
+        Developed responsive, high-quality client-facing features using React.js,
+        Vue.js, and Tailwind CSS, ensuring strict adherence to design specifications.
+      - >-
+        Participated in code reviews, proposed architectural improvements, and wrote
+        clean, maintainable code to ensure high quality and accessibility.
+  - company: WebReinvent Technologies Pvt. Ltd.
+    location: Delhi, India
+    title: Frontend Developer Trainee
+    dates: 07/2023 – 01/2024
+    bullets:
+      - >-
+        Developed responsive, user-friendly interfaces using React.js, HTML, and CSS for
+        client-facing web applications.
+      - >-
+        Identified, debugged, and resolved production frontend issues, implementing new
+        UI features based on wireframes.
+projects:
+  - name: Aqueous Digital — Internal CRM Platform
+    location: United Kingdom
+    title: React · Next.js · TypeScript · Tailwind CSS · NestJS · MongoDB
+    dates: Ongoing
+    bullets:
+      - >-
+        Developed frontend features and modules for a UK marketing CRM using React,
+        Next.js, and TypeScript, integrating with a NestJS and MongoDB backend.
+      - >-
+        Implemented role-based access control (RBAC), interactive HR calendars, and
+        complex project forms, ensuring smooth REST API integration.
+      - >-
+        Collaborated on frontend architecture improvements, focusing on component
+        reusability and clean state management.
+  - name: Cycling4All — Live Cycling Platform
+    location: United Kingdom
+    title: React · Next.js · TypeScript · Tailwind CSS
+    dates: Ongoing
+    bullets:
+      - >-
+        Shipped production-ready frontend features, authentication UI, and booking
+        modules using Next.js, React, TypeScript, and Tailwind CSS.
+      - >-
+        Translated design requirements into accessible, responsive components,
+        integrating English/Welsh (EN/CY) internationalisation.
+      - >-
+        Resolved critical production UI bugs and supported continuous integration and
+        deployment workflows.
+  - name: Toolstation — E-Commerce Platform Rebuild
+    location: Netherlands
+    title: Nuxt.js 3 · Vue.js · Tailwind CSS · Pinia · Builder.io
+    dates: 12/2023 – Present
+    bullets:
+      - >-
+        Contributed to a massive European e-commerce rebuild, developing a highly
+        structured, reusable UI component library based on atomic-design principles.
+      - >-
+        Utilised Tailwind CSS and modern state management to deliver highly performant,
+        responsive, and accessible user interfaces.
+skill_groups:
+  - label: Frontend Core
+    items:
+      - React
+      - TypeScript
+      - JavaScript (ES6+)
+      - HTML5
+      - CSS3
+  - label: UI & Styling
+    items:
+      - Tailwind CSS
+      - Bootstrap
+      - Responsive Design
+      - Component Libraries (Atomic Design)
+      - UI/UX Collaboration (Figma)
+  - label: Backend & API Integration
+    items:
+      - REST APIs
+      - Node.js
+      - Express
+      - NestJS
+      - MongoDB
+      - MySQL
+  - label: Tools & Architecture
+    items:
+      - Next.js
+      - Vue.js
+      - Nuxt.js
+      - State Management (Pinia)
+      - Git
+      - Vite
+      - Postman
+      - Vercel
+skills: >-
+  React, TypeScript, JavaScript (ES6+), HTML5, CSS3, Tailwind CSS, Bootstrap, Responsive
+  Design, Component Libraries (Atomic Design), UI/UX Collaboration (Figma), REST APIs,
+  Node.js, Express, NestJS, MongoDB, MySQL, Next.js, Vue.js, Nuxt.js, State Management
+  (Pinia), Git, Vite, Postman, Vercel
+languages: English (Professional Working Proficiency), Hindi (Native)
+interests: >-
+  Open to frontend / UI roles across Europe (remote or on-site with relocation support);
+  component libraries and design systems; performance-focused product engineering

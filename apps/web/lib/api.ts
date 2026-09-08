@@ -30,8 +30,16 @@ export async function setJobStatus(id: number, status: string): Promise<Job> {
   return res.json();
 }
 
-async function postJobAction(id: number, action: "score" | "tailor"): Promise<Job> {
-  const res = await fetch(`/api/jobs/${id}/${action}`, { method: "POST" });
+async function postJobAction(
+  id: number,
+  action: "score" | "tailor",
+  body?: Record<string, unknown>,
+): Promise<Job> {
+  const res = await fetch(`/api/jobs/${id}/${action}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg =
@@ -49,8 +57,11 @@ export function scoreJob(id: number) {
   return postJobAction(id, "score");
 }
 
-export function tailorJob(id: number) {
-  return postJobAction(id, "tailor");
+export function tailorJob(
+  id: number,
+  opts?: { llm_provider?: string | null; llm_model?: string | null },
+) {
+  return postJobAction(id, "tailor", opts);
 }
 
 export type CreateManualJobInput = {
@@ -104,15 +115,77 @@ export async function startRun(body: Record<string, unknown>) {
   });
 }
 
+export async function fetchApiHealth(): Promise<{ serverless?: boolean; linkedin_search?: boolean; note?: string }> {
+  const res = await fetch("/api/health", { cache: "no-store" });
+  if (!res.ok) throw new Error("health");
+  return res.json();
+}
+
 export async function fetchLlmProviders(): Promise<LlmCatalog> {
   const res = await fetch("/api/llm/providers");
   if (!res.ok) throw new Error("llm");
   return res.json();
 }
 
-export async function fetchSearchKeywords(): Promise<string[]> {
+export async function fetchSearchKeywords(): Promise<{ keywords: string[]; default_max_jobs: number }> {
   const res = await fetch("/api/search/keywords", { cache: "no-store" });
   if (!res.ok) throw new Error("Could not load search keywords");
-  const data = (await res.json()) as { keywords?: string[] };
-  return Array.isArray(data.keywords) ? data.keywords.filter(Boolean) : [];
+  const data = (await res.json()) as { keywords?: string[]; default_max_jobs?: number };
+  return {
+    keywords: Array.isArray(data.keywords) ? data.keywords.filter(Boolean) : [],
+    default_max_jobs: Number(data.default_max_jobs) > 0 ? Number(data.default_max_jobs) : 20,
+  };
+}
+
+export type ResumeProfile = {
+  id: string;
+  name: string;
+  headline: string;
+  source: "seed" | "imported";
+  active: boolean;
+};
+
+export type ResumeList = {
+  active_id: string;
+  profiles: ResumeProfile[];
+};
+
+async function parseResumeResponse(res: Response): Promise<ResumeList> {
+  const data = (await res.json().catch(() => ({}))) as ResumeList & { message?: string; detail?: string };
+  if (!res.ok) {
+    throw new Error(typeof data.message === "string" ? data.message : typeof data.detail === "string" ? data.detail : "Resume request failed");
+  }
+  return data;
+}
+
+export async function fetchResumes(): Promise<ResumeList> {
+  const res = await fetch("/api/resumes", { cache: "no-store" });
+  return parseResumeResponse(res);
+}
+
+export async function createResume(input: {
+  name: string;
+  text?: string;
+  file?: File | null;
+  llm_provider?: string | null;
+  llm_model?: string | null;
+}): Promise<ResumeList> {
+  const fd = new FormData();
+  if (input.name) fd.set("name", input.name);
+  if (input.text) fd.set("text", input.text);
+  if (input.llm_provider) fd.set("llm_provider", input.llm_provider);
+  if (input.llm_model) fd.set("llm_model", input.llm_model);
+  if (input.file) fd.set("file", input.file);
+  const res = await fetch("/api/resumes", { method: "POST", body: fd });
+  return parseResumeResponse(res);
+}
+
+export async function activateResume(id: string): Promise<ResumeList> {
+  const res = await fetch(`/api/resumes/${encodeURIComponent(id)}/activate`, { method: "POST" });
+  return parseResumeResponse(res);
+}
+
+export async function deleteResume(id: string): Promise<ResumeList> {
+  const res = await fetch(`/api/resumes/${encodeURIComponent(id)}`, { method: "DELETE" });
+  return parseResumeResponse(res);
 }

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { fetchLlmProviders, fetchRunStatus, fetchSearchKeywords, startRun } from "@/lib/api";
+import { fetchApiHealth, fetchLlmProviders, fetchRunStatus, fetchSearchKeywords, startRun } from "@/lib/api";
 import { LlmCatalog, RunState } from "@/lib/types";
 import { AddJobButton } from "./AddJobButton";
 import { KeywordTagInput } from "./KeywordTagInput";
+import { LlmProviderFields } from "./LlmProviderFields";
 import { Modal } from "./Modal";
 
 type Props = { initialStatus?: string };
@@ -20,11 +21,16 @@ export function RunControls({ initialStatus }: Props) {
   const [model, setModel] = useState("");
   const [logOpen, setLogOpen] = useState(true);
   const [keywords, setKeywords] = useState<string[]>([]);
+  const [maxJobs, setMaxJobs] = useState(20);
+  const [serverless, setServerless] = useState(false);
 
   useEffect(() => {
     if (initialStatus === "running") {
       void poll();
     }
+    void fetchApiHealth()
+      .then((h) => setServerless(Boolean(h.serverless) || h.linkedin_search === false))
+      .catch(() => undefined);
   }, [initialStatus]);
 
   async function loadCatalog() {
@@ -44,7 +50,8 @@ export function RunControls({ initialStatus }: Props) {
   async function loadKeywords() {
     try {
       const next = await fetchSearchKeywords();
-      setKeywords(next);
+      setKeywords(next.keywords);
+      setMaxJobs(next.default_max_jobs);
     } catch (exc) {
       toast.error(exc instanceof Error ? exc.message : "Could not load search keywords");
     }
@@ -80,6 +87,12 @@ export function RunControls({ initialStatus }: Props) {
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (serverless) {
+      toast.error(
+        "Find jobs cannot run on Vercel. Use pnpm dev on your laptop, or host the Nest API on Railway, Render, or Fly.",
+      );
+      return;
+    }
     const form = e.currentTarget;
     const fd = new FormData(form);
     const skipSearch = modalMode === "process";
@@ -96,6 +109,7 @@ export function RunControls({ initialStatus }: Props) {
       workplace: String(fd.get("workplace") || "include_remote"),
       skip_search: skipSearch,
       dry_run: false,
+      max_jobs: skipSearch ? undefined : Math.max(1, Math.min(80, Math.round(Number(maxJobs)) || 20)),
       llm_provider: provider || null,
       llm_model: model || null,
       keywords: skipSearch ? null : keywords,
@@ -157,13 +171,7 @@ export function RunControls({ initialStatus }: Props) {
     void poll();
   }
 
-  const selected = catalog?.providers.find((p) => p.id === provider);
   const running = busy || banner?.status === "running";
-  const retired: Record<string, boolean> = {
-    "gemini-2.0-flash": true,
-    "llama-3.3-70b-versatile": true,
-    "llama-3.1-8b-instant": true,
-  };
 
   return (
     <>
@@ -246,9 +254,15 @@ export function RunControls({ initialStatus }: Props) {
                 <p className="mt-1 text-sm text-ink-muted">
                   {modalMode === "process"
                     ? "Fetch missing descriptions, score listings, and generate CV PDFs."
-                    : "Search LinkedIn, then keep only titles that match your keywords (about 20 genuine roles per day). Off-target listings like AI Engineer are skipped."}{" "}
+                    : "Search LinkedIn, then keep only titles that match your keywords. Off-target listings like AI Engineer are skipped."}{" "}
                   Free providers auto-switch if one hits a limit (never uses paid OpenAI).
                 </p>
+                {serverless ? (
+                  <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                    This API is on Vercel serverless, which has no Chromium. Find jobs and PDF tailoring only work with{" "}
+                    <code className="rounded bg-white/80 px-1">pnpm dev</code> locally, or a always-on Nest host (Railway, Render, Fly).
+                  </p>
+                ) : null}
               </div>
               <button type="button" className="btn-ghost h-9 w-9 p-0" onClick={() => setModalOpen(false)} aria-label="Close">
                 ✕
@@ -261,6 +275,24 @@ export function RunControls({ initialStatus }: Props) {
                   <KeywordTagInput value={keywords} onChange={setKeywords} />
                   <span className="text-xs text-ink-muted">
                     Use the job titles you actually want (e.g. Frontend, React). LinkedIn still returns mixed results; we drop titles that are not a real match.
+                  </span>
+                </label>
+                <label className="grid gap-1.5 text-sm">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Jobs this run</span>
+                  <input
+                    type="number"
+                    name="max_jobs"
+                    min={1}
+                    max={80}
+                    value={maxJobs}
+                    onChange={(e) => {
+                      const n = Number(e.target.value);
+                      setMaxJobs(Number.isFinite(n) ? n : 20);
+                    }}
+                    className="field"
+                  />
+                  <span className="text-xs text-ink-muted">
+                    Stop after this many on-target listings (1–80). Already-saved jobs are not counted.
                   </span>
                 </label>
                 <label className="grid gap-1.5 text-sm">
@@ -303,58 +335,20 @@ export function RunControls({ initialStatus }: Props) {
                   </select>
                 </label>
               </div>
-              <fieldset className="space-y-3 border-t border-line pt-4">
-                <legend className="text-xs font-semibold uppercase tracking-wide text-ink-muted">LLM for score & tailor</legend>
-                {catalog?.most_tokens_label ? (
-                  <p className="text-xs text-ink-muted">
-                    Most free tokens: <strong className="text-ink">{catalog.most_tokens_label}</strong>
-                    {(catalog as { auto_failover?: boolean }).auto_failover !== false
-                      ? " · Auto-failover across free providers is on."
-                      : null}
-                  </p>
-                ) : null}
-                <div className="grid gap-2">
-                  {(catalog?.providers || []).map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      disabled={!p.configured}
-                      onClick={() => {
-                        setProvider(p.id);
-                        setModel(p.recommended_model || p.default_model);
-                      }}
-                      className={`rounded-2xl border px-3 py-2.5 text-left text-sm transition disabled:opacity-45 ${provider === p.id ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/30"
-                        }`}
-                    >
-                      <div className="flex justify-between gap-2">
-                        <div>
-                          <strong>{p.label}</strong>
-                          <span className="text-ink-muted"> · {p.cost}</span>
-                          <div className="mt-0.5 text-xs text-ink-muted">{p.token_note}</div>
-                        </div>
-                        <span className="tabular-nums text-xs text-ink-muted">{p.token_score}/100</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <label className="grid gap-1.5 text-sm">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Model</span>
-                  <select value={model} onChange={(e) => setModel(e.target.value)} className="field">
-                    {(selected?.models || []).map((m) => (
-                      <option key={m} value={m} disabled={retired[m]}>
-                        {m}
-                        {m === selected?.default_model ? " (recommended)" : ""}
-                        {retired[m] ? " — retired" : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </fieldset>
+              <div className="border-t border-line pt-4">
+                <LlmProviderFields
+                  catalog={catalog}
+                  provider={provider}
+                  model={model}
+                  onProvider={setProvider}
+                  onModel={setModel}
+                />
+              </div>
               <div className="mt-1 flex justify-end gap-2 border-t border-line pt-4">
                 <button type="button" className="btn-secondary" onClick={() => setModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn-primary" disabled={serverless}>
                   {modalMode === "process" ? "Start score & tailor" : "Start search"}
                 </button>
               </div>

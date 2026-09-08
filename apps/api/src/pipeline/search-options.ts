@@ -7,6 +7,7 @@ export type SearchOptions = {
   workplace: "remote_only" | "include_remote" | "any";
   skip_search: boolean;
   dry_run: boolean;
+  max_jobs: number;
   llm_provider?: string | null;
   llm_model?: string | null;
   keywords?: string[] | null;
@@ -33,6 +34,7 @@ export function defaultSearchOptions(
     workplace: "include_remote",
     skip_search: false,
     dry_run: false,
+    max_jobs: extra.max_jobs ?? 20,
     llm_provider: null,
     llm_model: null,
     keywords: extra.keywords ?? null,
@@ -56,6 +58,8 @@ export function parseSearchOptions(data?: Record<string, unknown> | null): Searc
   }
   let model = data.llm_model ? String(data.llm_model).trim() : null;
   if (!model) model = null;
+  let maxJobs = Number(data.max_jobs ?? 20);
+  if (!Number.isFinite(maxJobs)) maxJobs = 20;
   const rawKeywords = Array.isArray(data.keywords) ? data.keywords : [];
   const keywords = [
     ...new Set(
@@ -73,6 +77,7 @@ export function parseSearchOptions(data?: Record<string, unknown> | null): Searc
     workplace: workplace as SearchOptions["workplace"],
     skip_search: asBool(data.skip_search, false),
     dry_run: asBool(data.dry_run, false),
+    max_jobs: Math.max(1, Math.min(80, Math.round(maxJobs))),
     llm_provider: provider,
     llm_model: model,
     keywords: keywords.length ? keywords : null,
@@ -81,6 +86,7 @@ export function parseSearchOptions(data?: Record<string, unknown> | null): Searc
 
 export function summarizeOptions(options: SearchOptions): string {
   const bits = [
+    `up to ${options.max_jobs} jobs`,
     `past ${options.posted_within_hours}h`,
     options.easy_apply ? "Easy Apply only" : "all apply types",
     options.sort_by === "DD" ? "sort=date" : "sort=relevance",

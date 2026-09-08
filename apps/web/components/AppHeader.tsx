@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ResumeSwitcher } from "./ResumeSwitcher";
 
 export function AppHeader({ actions }: { actions?: ReactNode }) {
   return (
@@ -20,7 +21,10 @@ export function AppHeader({ actions }: { actions?: ReactNode }) {
             <span className="block text-xs text-ink-muted">Find · tailor · you apply</span>
           </span>
         </Link>
-        {actions ? <div className="w-full sm:w-auto">{actions}</div> : null}
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
+          <ResumeSwitcher />
+          {actions}
+        </div>
       </div>
     </header>
   );

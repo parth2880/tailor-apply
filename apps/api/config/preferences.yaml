@@ -19,7 +19,6 @@ seniority_prefer:
   - senior
   - junior
 
-max_jobs_per_day: 20
 search_delay_seconds_min: 2.0
 search_delay_seconds_max: 5.0
 detail_delay_seconds_min: 1.5

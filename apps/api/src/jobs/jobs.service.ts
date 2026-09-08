@@ -25,6 +25,7 @@ function fromSqliteRow(row: Record<string, unknown>): Job {
     appliedAt: (row.applied_at as string) ?? null,
     createdAt: String(row.created_at ?? ""),
     updatedAt: String(row.updated_at ?? ""),
+    lastSeenAt: String(row.last_seen_at ?? row.created_at ?? ""),
   };
 }
 
@@ -129,6 +130,7 @@ export class JobsService {
           isEasyApply: easy ? 1 : existing.isEasyApply,
           status: newStatus,
           updatedAt: now,
+          lastSeenAt: now,
         },
       });
     }
@@ -145,6 +147,7 @@ export class JobsService {
         isEasyApply: easy,
         createdAt: now,
         updatedAt: now,
+        lastSeenAt: now,
       },
     });
   }
@@ -208,6 +211,8 @@ export class JobsService {
     const data: Prisma.JobUpdateInput = { status, updatedAt: now };
     if (status === JobStatus.APPLIED) {
       data.appliedAt = now;
+    } else {
+      data.appliedAt = null;
     }
     return this.prisma.job.update({ where: { id }, data });
   }
@@ -242,13 +247,5 @@ export class JobsService {
       LIMIT ${limit}
     `;
     return rows.map(fromSqliteRow);
-  }
-
-  countToday() {
-    return this.prisma.$queryRaw<{ c: number }[]>`
-      SELECT COUNT(*) AS c FROM jobs
-      WHERE date(created_at) = date('now')
-        AND status != ${JobStatus.SKIPPED}
-    `.then((rows) => Number(rows[0]?.c ?? 0));
   }
 }

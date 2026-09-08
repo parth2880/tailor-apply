@@ -2,6 +2,7 @@ import { existsSync, readFileSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
 import Handlebars from "handlebars";
 import { chromium } from "playwright";
+import { assertChromiumAvailable, wrapPlaywrightLaunch } from "../common/browser";
 import { contactItems, contactLine, ResumeData } from "./schema";
 
 const TEMPLATES_DIR = join(__dirname, "templates");
@@ -35,7 +36,13 @@ async function htmlToPdf(
     pageFormat === "A4"
       ? { top: "16mm", bottom: "14mm", left: "16mm", right: "16mm" }
       : { top: "0.5in", bottom: "0.5in", left: "0.55in", right: "0.55in" };
-  const browser = await chromium.launch({ headless: true });
+  assertChromiumAvailable();
+  let browser;
+  try {
+    browser = await chromium.launch({ headless: true });
+  } catch (exc) {
+    wrapPlaywrightLaunch(exc);
+  }
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });

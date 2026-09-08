@@ -28,6 +28,7 @@ model Job {
   appliedAt             String? @map("applied_at")
   createdAt             String  @default("") @map("created_at")
   updatedAt             String  @default("") @map("updated_at")
+  lastSeenAt            String  @default("") @map("last_seen_at")
 
   @@index([status], map: "idx_jobs_status")
   @@index([matchScore], map: "idx_jobs_score")

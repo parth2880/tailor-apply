@@ -51,7 +51,7 @@ export default async function JobDetail({
                     {job.applied_at ? (
                       <>
                         <span className="mx-1.5">·</span>
-                        Applied {job.applied_at}
+                        Applied {job.applied_at.slice(0, 10)}
                       </>
                     ) : null}
                   </p>
@@ -63,6 +63,7 @@ export default async function JobDetail({
                     jobTitle={job.title}
                     linkedinUrl={job.url}
                     hasPdf={Boolean(job.tailored_resume_pdf_path)}
+                    status={job.status}
                     variant="header"
                     showDetails={false}
                   />
@@ -79,13 +80,26 @@ export default async function JobDetail({
           </article>
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-3xl border border-line bg-white p-4 shadow-sm sm:p-5">
-              <p className="text-sm font-semibold">Next steps</p>
-              <p className="mt-1 text-xs text-ink-muted">Open LinkedIn to apply yourself. Mark the outcome here when you are done.</p>
+              <p className="text-sm font-semibold">
+                {job.status === "applied" ? "Already applied" : job.status === "skipped" ? "Skipped" : "Next steps"}
+              </p>
+              <p className="mt-1 text-xs text-ink-muted">
+                {job.status === "applied"
+                  ? "You marked this as applied. Open LinkedIn if you need to follow up, or move it back to the queue if that was a mistake."
+                  : job.status === "skipped"
+                    ? "This listing is out of the queue. Restore it if you still want to apply."
+                    : "Open LinkedIn to apply yourself. Mark the outcome here when you are done."}
+              </p>
               <div className="mt-4 flex flex-col gap-2">
                 <a className="btn-primary no-underline" href={job.url} target="_blank" rel="noopener noreferrer">
                   Open on LinkedIn
                 </a>
-                <StatusButtons jobId={job.id} />
+                <StatusButtons
+                  jobId={job.id}
+                  status={job.status}
+                  hasPdf={Boolean(job.tailored_resume_pdf_path)}
+                  matchScore={job.match_score}
+                />
               </div>
             </div>
           </aside>

@@ -1,0 +1,17 @@
+{
+  "activeId": "master",
+  "profiles": [
+    {
+      "id": "master",
+      "name": "Parth Sharma",
+      "source": "seed",
+      "file": "master_resume.yaml"
+    },
+    {
+      "id": "ps-frontend-developer-react-typescript-k-m-warsz",
+      "name": "PS Frontend Developer React Typescript K M Warszawa Mazowieckie Polska K M",
+      "source": "imported",
+      "file": "ps-frontend-developer-react-typescript-k-m-warsz.yaml"
+    }
+  ]
+}

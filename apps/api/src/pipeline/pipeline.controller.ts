@@ -1,4 +1,6 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post } from "@nestjs/common";
+import { BROWSER_UNAVAILABLE_MESSAGE } from "../common/browser";
+import { isServerlessRuntime } from "../common/paths";
 import { PipelineRunner } from "./runner";
 import { parseSearchOptions } from "./search-options";
 import { listLlmProviders } from "../llm/llm";
@@ -16,7 +18,10 @@ export class PipelineController {
   @Get("search/keywords")
   keywords() {
     const roles = getRolesConfig();
-    return { keywords: [...(roles.titles || [])] };
+    return {
+      keywords: [...(roles.titles || [])],
+      default_max_jobs: roles.max_jobs_per_run || 20,
+    };
   }
 
   @Get("run/status")
@@ -26,6 +31,16 @@ export class PipelineController {
 
   @Post("run")
   start(@Body() body: Record<string, unknown>) {
+    if (isServerlessRuntime()) {
+      throw new HttpException(
+        {
+          detail: BROWSER_UNAVAILABLE_MESSAGE,
+          message: BROWSER_UNAVAILABLE_MESSAGE,
+          code: "BROWSER_UNAVAILABLE",
+        },
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
     const options = parseSearchOptions(body);
     console.log(`Portal run filters: ${JSON.stringify(options)}`);
     const result = this.runner.start(options, true);

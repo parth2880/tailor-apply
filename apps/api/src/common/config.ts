@@ -23,7 +23,6 @@ export type RolesConfig = {
 export type PreferencesConfig = {
   exclude_keywords: string[];
   seniority_prefer: string[];
-  max_jobs_per_day: number;
   search_delay_seconds_min: number;
   search_delay_seconds_max: number;
   detail_delay_seconds_min: number;
@@ -68,7 +67,6 @@ const rolesDefaults: RolesConfig = {
 const prefsDefaults: PreferencesConfig = {
   exclude_keywords: [],
   seniority_prefer: [],
-  max_jobs_per_day: 40,
   search_delay_seconds_min: 2,
   search_delay_seconds_max: 5,
   detail_delay_seconds_min: 1.5,
@@ -106,10 +104,20 @@ export function getRolesConfig(): RolesConfig {
   return rolesCache;
 }
 
+function parseEnvBool(raw?: string): boolean | undefined {
+  if (raw == null || raw.trim() === "") return undefined;
+  const text = raw.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(text)) return true;
+  if (["0", "false", "no", "off"].includes(text)) return false;
+  return undefined;
+}
+
 export function getPreferences(): PreferencesConfig {
   ensureDataDirs();
   if (!prefsCache) {
     prefsCache = { ...prefsDefaults, ...loadYaml(PREFERENCES_CONFIG) } as PreferencesConfig;
+    const headlessEnv = parseEnvBool(process.env.HEADLESS ?? process.env.PLAYWRIGHT_HEADLESS);
+    if (headlessEnv !== undefined) prefsCache.headless = headlessEnv;
   }
   return prefsCache;
 }

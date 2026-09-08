@@ -7,7 +7,7 @@ import { candidateResumeText } from "../matching/scorer";
 import { psDownloadName } from "./filename";
 import { resumeToPdf } from "./pdf";
 import { ResumeData, normalizeResume } from "./schema";
-import { loadMasterResumeData, masterResumeFilePath } from "./tailor";
+import { loadMasterResumeData, masterResumeFilePath, activeResumeLabel } from "./profiles";
 
 export type ScoringResumeFile = {
   source: "tailored" | "master";
@@ -69,14 +69,15 @@ export async function getScoringResume(job: Job): Promise<ScoringResumeFile | nu
 
   const data = loadMasterResumeData();
   const yamlPath = masterResumeFilePath();
-  const pdfPath = join(OUTPUTS_DIR, "PS Master Resume.pdf");
+  const slug = yamlPath.replace(/[^\w.-]+/g, "_").slice(-40);
+  const pdfPath = join(OUTPUTS_DIR, `active-resume-${slug}.pdf`);
   const yamlNewer = !existsSync(pdfPath) || statSync(yamlPath).mtimeMs > statSync(pdfPath).mtimeMs;
   if (yamlNewer) {
     await resumeToPdf(data, pdfPath, opts);
   }
   return {
     source: "master",
-    label: "Master resume (data/master_resume.yaml)",
+    label: activeResumeLabel(),
     filename: psDownloadName(job.title),
     pdfPath,
   };
